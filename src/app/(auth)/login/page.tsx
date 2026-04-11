@@ -4,7 +4,23 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Shield, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { t, type Lang, type TranslationKey } from "@/lib/i18n";
+
+function useLang() {
+  const [lang] = useState<Lang>(() => {
+    if (typeof window === "undefined") return "ka";
+    try {
+      const stored = JSON.parse(localStorage.getItem("safety_app_data") || "{}");
+      return stored.lang || "ka";
+    } catch { return "ka"; }
+  });
+  return (key: TranslationKey) => t(key, lang);
+}
+
+const inputStyle = "bg-gray-50 focus:bg-white border-gray-200 py-3.5 min-h-[52px]";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,20 +29,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const tr = useLang();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
-    // Client-side validation
-    if (!email.trim()) {
-      setError("შეიყვანეთ ელ-ფოსტა");
-      return;
-    }
-    if (!password) {
-      setError("შეიყვანეთ პაროლი");
-      return;
-    }
+    if (!email.trim()) { setError(tr("auth.err_email_required")); return; }
+    if (!password) { setError(tr("auth.err_password_required")); return; }
 
     setLoading(true);
 
@@ -40,23 +50,21 @@ export default function LoginPage() {
       if (authError) {
         const msg = authError.message.toLowerCase();
         if (msg.includes("invalid login") || msg.includes("invalid_credentials")) {
-          setError("არასწორი ელ-ფოსტა ან პაროლი. შეამოწმეთ და სცადეთ თავიდან.");
+          setError(tr("auth.err_invalid_credentials"));
         } else if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
-          setError("ელ-ფოსტა ჯერ არ არის დადასტურებული. შეამოწმეთ ინბოქსი (და სპამის საქაღალდე) და დააჭირეთ დადასტურების ბმულს.");
+          setError(tr("auth.err_email_not_confirmed"));
         } else if (msg.includes("too many") || msg.includes("rate limit") || msg.includes("429")) {
-          setError("ძალიან ბევრი მცდელობა. გთხოვთ მოიცადოთ 1 წუთი და სცადოთ თავიდან.");
+          setError(tr("auth.err_rate_limit"));
         } else if (msg.includes("network") || msg.includes("fetch")) {
-          setError("კავშირის პრობლემა. შეამოწმეთ ინტერნეტი.");
+          setError(tr("auth.err_network"));
         } else {
-          setError("შესვლა ვერ მოხერხდა: " + authError.message);
+          setError(tr("auth.err_login_failed") + authError.message);
         }
         setLoading(false);
         return;
       }
 
-      // Get role and redirect
       const { data: { user } } = await supabase.auth.getUser();
-      setLoading(false);
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
@@ -67,30 +75,30 @@ export default function LoginPage() {
         router.push(`/${profile?.role || "inspector"}`);
         router.refresh();
       }
-    } catch (err) {
-      setError("კავშირის პრობლემა. შეამოწმეთ ინტერნეტი.");
+    } catch {
+      setError(tr("auth.err_network"));
+    } finally {
       setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Top area with branding */}
+      {/* Branding */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 pb-4 pt-12">
         <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-blue-600/20">
           <Shield className="w-8 h-8 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">SafetyApp</h1>
-        <p className="text-sm text-gray-500 mt-1">შრომის უსაფრთხოების მართვა</p>
+        <h1 className="text-2xl font-bold text-gray-900">{tr("app.name")}</h1>
+        <p className="text-sm text-gray-500 mt-1">{tr("auth.safety_mgmt")}</p>
       </div>
 
-      {/* Form card */}
+      {/* Form */}
       <div className="px-5 pb-8">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 max-w-sm mx-auto w-full">
-          <h2 className="text-lg font-bold text-gray-900 mb-1">შესვლა</h2>
-          <p className="text-sm text-gray-500 mb-5">შედით თქვენს ანგარიშში</p>
+          <h2 className="text-lg font-bold text-gray-900 mb-1">{tr("auth.login")}</h2>
+          <p className="text-sm text-gray-500 mb-5">{tr("auth.login_subtitle")}</p>
 
-          {/* Error banner */}
           {error && (
             <div className="flex items-start gap-2.5 bg-red-50 text-red-700 text-sm p-3.5 rounded-xl mb-4 border border-red-100">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
@@ -99,38 +107,32 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                ელ-ფოსტა
-              </label>
-              <input
-                id="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3.5 text-base bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[52px]"
-                required
-              />
-            </div>
+            <Input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              label={tr("auth.email")}
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError(""); }}
+              className={inputStyle}
+              required
+            />
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                პაროლი
+                {tr("auth.password")}
               </label>
               <div className="relative">
-                <input
+                <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  placeholder="შეიყვანეთ პაროლი"
+                  placeholder={tr("auth.password_placeholder")}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3.5 pr-12 text-base bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[52px]"
+                  className={`${inputStyle} pr-12`}
                   required
                 />
                 <button
@@ -143,29 +145,20 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400 text-white font-bold text-base py-3.5 rounded-xl transition-colors min-h-[52px] flex items-center justify-center gap-2 shadow-sm"
-            >
+            <Button type="submit" disabled={loading} size="lg" className="w-full font-bold">
               {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  იტვირთება...
-                </>
+                <><Loader2 className="w-5 h-5 animate-spin mr-2" />{tr("loading")}</>
               ) : (
-                "შესვლა"
+                tr("auth.login")
               )}
-            </button>
+            </Button>
           </form>
         </div>
 
-        {/* Register link */}
         <p className="text-center text-sm text-gray-500 mt-5">
-          არ გაქვთ ანგარიში?{" "}
+          {tr("auth.no_account")}{" "}
           <Link href="/register" className="text-blue-600 font-semibold hover:underline">
-            რეგისტრაცია
+            {tr("auth.register")}
           </Link>
         </p>
       </div>

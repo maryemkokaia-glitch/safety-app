@@ -63,6 +63,8 @@ export default function InspectorInspect() {
   function removeItemPhoto(itemId: string, photoId: string) {
     updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, items: insp.items.map((item) => item.id === itemId ? { ...item, photos: (item.photos || []).filter((p) => p.id !== photoId) } : item) } : insp) }));
   }
+  const [showConfirm, setShowConfirm] = useState(false);
+
   function submitInspection() {
     const score = calculateSafetyScore(items);
     updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, status: "completed", safety_score: score, notes: notes || null, weather: weather || null, completed_at: new Date().toISOString() } : insp) }));
@@ -280,7 +282,7 @@ export default function InspectorInspect() {
 
       {/* Submit button — full width, prominent */}
       <div className="pb-4">
-        <Button onClick={submitInspection} size="lg" className="w-full text-base">
+        <Button onClick={() => setShowConfirm(true)} size="lg" className="w-full text-base">
           <Send className="w-5 h-5 mr-2" />
           {t("inspection.finish")} — {score}% {getScoreLabel(score)}
         </Button>
@@ -288,6 +290,35 @@ export default function InspectorInspect() {
           {items.filter((i) => i.status === "violation").length} {t("inspection.violation")} · {items.filter((i) => i.status === "warning").length} {t("inspection.warning")}
         </p>
       </div>
+
+      {/* Confirmation dialog */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowConfirm(false)} />
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm relative z-10">
+            <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4",
+              score >= 80 ? "bg-green-100" : score >= 50 ? "bg-amber-100" : "bg-red-100"
+            )}>
+              <span className={cn("text-2xl font-black",
+                score >= 80 ? "text-green-700" : score >= 50 ? "text-amber-700" : "text-red-700"
+              )}>{score}%</span>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 text-center mb-1">{t("inspection.confirm_submit")}</h3>
+            <p className="text-sm text-gray-500 text-center mb-5">{t("inspection.confirm_submit_desc")}</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowConfirm(false)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 min-h-[48px]">
+                {t("cancel")}
+              </button>
+              <button onClick={submitInspection}
+                className="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 min-h-[48px] flex items-center justify-center gap-2">
+                <Send className="w-4 h-4" />
+                {t("inspection.finish")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

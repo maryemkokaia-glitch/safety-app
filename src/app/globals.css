@@ -14,6 +14,12 @@ button, a, input, select, textarea {
   min-height: 44px;
 }
 
+/* Remove iOS default select styling */
+select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* Smooth scrolling on iOS */
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
@@ -23,5 +29,11 @@ button, a, input, select, textarea {
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
   }
 }

@@ -5,12 +5,21 @@ export const metadata: Metadata = {
   title: "SafetyApp - სამშენებლო უსაფრთხოება",
   description: "სამშენებლო ობიექტების უსაფრთხოების მართვის სისტემა",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SafetyApp",
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
   themeColor: "#1e40af",
 };
 

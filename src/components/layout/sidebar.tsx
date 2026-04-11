@@ -14,7 +14,7 @@ import type { TranslationKey } from "@/lib/i18n";
 interface NavItem { labelKey: TranslationKey; href: string; icon: React.ReactNode; }
 
 const inspectorNav: NavItem[] = [
-  { labelKey: "nav.projects", href: "/inspector", icon: <FolderOpen className="w-5 h-5" /> },
+  { labelKey: "nav.dashboard", href: "/inspector", icon: <LayoutDashboard className="w-5 h-5" /> },
   { labelKey: "nav.history", href: "/inspector/history", icon: <History className="w-5 h-5" /> },
   { labelKey: "nav.regulations", href: "/inspector/regulations", icon: <BookOpen className="w-5 h-5" /> },
 ];

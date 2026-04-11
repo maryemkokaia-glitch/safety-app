@@ -18,13 +18,20 @@ interface DemoContextType {
   t: (key: TranslationKey) => string;
 }
 
-const DemoContext = createContext<DemoContextType>(null!);
+export const DemoContext = createContext<DemoContextType>(null!);
 
 export function DemoProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<AppData | null>(null);
 
   useEffect(() => {
-    setData(loadData());
+    const loaded = loadData();
+    // Default to inspector role for mobile app
+    if (loaded.currentRole !== "inspector") {
+      const updated = switchRole("inspector");
+      setData({ ...updated });
+    } else {
+      setData(loaded);
+    }
   }, []);
 
   const setRole = useCallback((role: UserRole) => {

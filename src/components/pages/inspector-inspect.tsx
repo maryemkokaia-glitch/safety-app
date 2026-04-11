@@ -19,6 +19,7 @@ export default function InspectorInspect() {
   const { data, updateData, t } = useDemo();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [weather, setWeather] = useState("");
   const [showSubmit, setShowSubmit] = useState(false);
 
   const inspection = data.inspections.find((i) => i.id === id);
@@ -63,8 +64,11 @@ export default function InspectorInspect() {
   }
   function submitInspection() {
     const score = calculateSafetyScore(items);
-    updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, status: "completed", safety_score: score, notes: notes || null, completed_at: new Date().toISOString() } : insp) }));
+    updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, status: "completed", safety_score: score, notes: notes || null, weather: weather || null, completed_at: new Date().toISOString() } : insp) }));
     router.push("/inspector");
+  }
+  function updatePhotoCaption(itemId: string, photoId: string, caption: string) {
+    updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, items: insp.items.map((item) => item.id === itemId ? { ...item, photos: (item.photos || []).map((p) => p.id === photoId ? { ...p, caption: caption || null } : p) } : item) } : insp) }));
   }
 
   const score = calculateSafetyScore(items);
@@ -212,16 +216,25 @@ export default function InspectorInspect() {
                       </label>
                     </div>
 
-                    {/* Photo thumbnails */}
+                    {/* Photo thumbnails with captions */}
                     {(item.photos?.length ?? 0) > 0 && (
-                      <div className="flex gap-2 flex-wrap">
+                      <div className="space-y-2">
                         {item.photos!.map((photo) => (
-                          <div key={photo.id} className="relative group">
-                            <img src={photo.photo_url} alt="" className="w-20 h-20 object-cover rounded-lg border border-gray-200" />
-                            <button onClick={() => removeItemPhoto(item.id, photo.id)}
-                              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
-                              <X className="w-3 h-3" />
-                            </button>
+                          <div key={photo.id} className="flex items-start gap-2 bg-white rounded-xl border border-gray-200 p-2">
+                            <div className="relative shrink-0">
+                              <img src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg" />
+                              <button onClick={() => removeItemPhoto(item.id, photo.id)}
+                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              placeholder={t("inspection.photo_caption")}
+                              value={photo.caption || ""}
+                              onChange={(e) => updatePhotoCaption(item.id, photo.id, e.target.value)}
+                              className="flex-1 text-xs border-0 bg-transparent py-1 px-0 placeholder-gray-400 focus:outline-none focus:ring-0 min-h-[32px]"
+                            />
                           </div>
                         ))}
                       </div>
@@ -234,11 +247,33 @@ export default function InspectorInspect() {
         })}
       </div>
 
-      {/* General notes */}
+      {/* Weather & notes */}
       <Card className="mb-4">
         <CardContent>
-          <Textarea label={t("inspection.notes")} placeholder={t("inspection.notes_placeholder")}
-            value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t("inspection.weather")}</label>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { value: "sunny", icon: "☀️", label: t("weather.sunny") },
+                  { value: "cloudy", icon: "☁️", label: t("weather.cloudy") },
+                  { value: "rainy", icon: "🌧️", label: t("weather.rainy") },
+                  { value: "windy", icon: "💨", label: t("weather.windy") },
+                ].map((w) => (
+                  <button key={w.value} onClick={() => setWeather(weather === w.value ? "" : w.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-medium transition-all border-2 min-h-[52px]",
+                      weather === w.value ? "border-blue-300 bg-blue-50 text-blue-700" : "border-transparent bg-gray-50 text-gray-500 active:scale-95"
+                    )}>
+                    <span className="text-lg">{w.icon}</span>
+                    <span>{w.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Textarea label={t("inspection.notes")} placeholder={t("inspection.notes_placeholder")}
+              value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+          </div>
         </CardContent>
       </Card>
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { DemoProvider } from "@/lib/demo-context";
+import { AppDataProvider } from "@/lib/data-context";
 import { Sidebar } from "@/components/layout/sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <DemoProvider>
+    <AppDataProvider>
       <div className="min-h-screen bg-gray-50">
         <Sidebar />
         <main className="lg:pl-64">
@@ -14,6 +14,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </main>
       </div>
-    </DemoProvider>
+    </AppDataProvider>
   );
 }

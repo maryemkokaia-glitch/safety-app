@@ -41,8 +41,8 @@ export default function AdminProjectDetail() {
       <Card className="mb-6">
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select id="inspector" label={t("project.inspector")} value=""
-              onChange={(e) => {/* Inspector assignment for future */}}
+            <Select id="inspector" label={t("project.inspector")} value={project.inspector_id || ""}
+              onChange={(e) => updateProject("inspector_id", e.target.value)}
               options={[{ value: "", label: t("project.select_inspector") }, ...inspectors.map((u) => ({ value: u.id, label: u.full_name }))]} />
             <Select id="client" label={t("project.client")} value={project.client_id || ""}
               onChange={(e) => updateProject("client_id", e.target.value)}

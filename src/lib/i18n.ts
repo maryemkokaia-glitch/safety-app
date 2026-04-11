@@ -14,6 +14,8 @@ export const translations = {
   "no_data": { ka: "მონაცემები არ არის", en: "No data" },
   "all": { ka: "ყველა", en: "All" },
   "reset_data": { ka: "მონაცემების გადატვირთვა", en: "Reset Data" },
+  "settings": { ka: "პარამეტრები", en: "Settings" },
+  "language": { ka: "ენა", en: "Language" },
 
   // Roles
   "role.admin": { ka: "ადმინისტრატორი", en: "Administrator" },
@@ -70,6 +72,12 @@ export const translations = {
   "inspection.photos": { ka: "ფოტოები", en: "Photos" },
   "inspection.photo_count": { ka: "ფოტო", en: "photo(s)" },
   "inspection.remove_photo": { ka: "წაშლა", en: "Remove" },
+  "inspection.photo_caption": { ka: "ფოტოს აღწერა...", en: "Photo caption..." },
+  "inspection.weather": { ka: "ამინდი", en: "Weather" },
+  "weather.sunny": { ka: "მზიანი", en: "Sunny" },
+  "weather.cloudy": { ka: "მოღრუბლული", en: "Cloudy" },
+  "weather.rainy": { ka: "წვიმიანი", en: "Rainy" },
+  "weather.windy": { ka: "ქარიანი", en: "Windy" },
 
   // Score
   "score.excellent": { ka: "შესანიშნავი", en: "Excellent" },

@@ -30,55 +30,79 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
   }, [authUser, authLoading]);
 
   async function fetchAllData() {
-    if (!authUser) return;
+    if (!authUser) {
+      setLoading(false);
+      return;
+    }
 
-    const [
-      { data: projects },
-      { data: templates },
-      { data: inspections },
-      { data: regulations },
-      { data: notifications },
-      { data: users },
-    ] = await Promise.all([
-      supabase.from("projects").select("*").order("created_at", { ascending: false }),
-      supabase.from("checklist_templates").select("*, items:checklist_template_items(*)").order("created_at"),
-      supabase.from("inspections")
-        .select("*, items:inspection_items(*, photos:inspection_photos(*), template_item:checklist_template_items(*))")
-        .order("started_at", { ascending: false }),
-      supabase.from("regulations").select("*").order("created_at"),
-      supabase.from("notifications").select("*").eq("user_id", authUser.id).order("created_at", { ascending: false }),
-      supabase.from("profiles").select("*"),
-    ]);
+    try {
+      const results = await Promise.allSettled([
+        supabase.from("projects").select("*").order("created_at", { ascending: false }),
+        supabase.from("checklist_templates").select("*, items:checklist_template_items(*)").order("created_at"),
+        supabase.from("inspections")
+          .select("*, items:inspection_items(*, photos:inspection_photos(*), template_item:checklist_template_items(*))")
+          .order("started_at", { ascending: false }),
+        supabase.from("regulations").select("*").order("created_at"),
+        supabase.from("notifications").select("*").eq("user_id", authUser.id).order("created_at", { ascending: false }),
+        supabase.from("profiles").select("*"),
+      ]);
 
-    // Map templates to include items array properly
-    const mappedTemplates = (templates || []).map((t: any) => ({
-      ...t,
-      items: (t.items || []).sort((a: any, b: any) => a.order_index - b.order_index),
-    }));
+      const getData = (idx: number) => {
+        const r = results[idx];
+        return r.status === "fulfilled" ? r.value.data || [] : [];
+      };
 
-    // Map inspections to include items with template_item and photos
-    const mappedInspections = (inspections || []).map((insp: any) => ({
-      ...insp,
-      items: (insp.items || []).map((item: any) => ({
-        ...item,
-        template_item: item.template_item || null,
-        photos: item.photos || [],
-      })),
-    }));
+      const projects = getData(0);
+      const templates = getData(1);
+      const inspections = getData(2);
+      const regulations = getData(3);
+      const notifications = getData(4);
+      const users = getData(5);
 
-    const appData: AppData = {
-      lang,
-      currentRole: (authUser.role as UserRole) || "inspector",
-      currentUser: authUser,
-      projects: projects || [],
-      templates: mappedTemplates,
-      inspections: mappedInspections,
-      regulations: regulations || [],
-      notifications: notifications || [],
-      users: users || [],
-    };
+      // Map templates to include items array properly
+      const mappedTemplates = (templates || []).map((t: any) => ({
+        ...t,
+        items: (t.items || []).sort((a: any, b: any) => a.order_index - b.order_index),
+      }));
 
-    setData(appData);
+      // Map inspections to include items with template_item and photos
+      const mappedInspections = (inspections || []).map((insp: any) => ({
+        ...insp,
+        items: (insp.items || []).map((item: any) => ({
+          ...item,
+          template_item: item.template_item || null,
+          photos: item.photos || [],
+        })),
+      }));
+
+      const appData: AppData = {
+        lang,
+        currentRole: (authUser.role as UserRole) || "inspector",
+        currentUser: authUser,
+        projects: projects || [],
+        templates: mappedTemplates,
+        inspections: mappedInspections,
+        regulations: regulations || [],
+        notifications: notifications || [],
+        users: users || [],
+      };
+
+      setData(appData);
+    } catch (err) {
+      console.error("Failed to fetch data:", err);
+      // Still set data with empty arrays so app doesn't get stuck
+      setData({
+        lang,
+        currentRole: "inspector",
+        currentUser: authUser,
+        projects: [],
+        templates: [],
+        inspections: [],
+        regulations: [],
+        notifications: [],
+        users: [],
+      });
+    }
     setLoading(false);
   }
 

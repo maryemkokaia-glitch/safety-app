@@ -72,6 +72,7 @@ export const translations = {
   "inspection.photos": { ka: "ფოტოები", en: "Photos" },
   "inspection.photo_count": { ka: "ფოტო", en: "photo(s)" },
   "inspection.remove_photo": { ka: "წაშლა", en: "Remove" },
+  "inspection.pick_template": { ka: "აირჩიეთ შაბლონი", en: "Pick a template" },
   "inspection.photo_caption": { ka: "ფოტოს აღწერა...", en: "Photo caption..." },
   "inspection.weather": { ka: "ამინდი", en: "Weather" },
   "weather.sunny": { ka: "მზიანი", en: "Sunny" },

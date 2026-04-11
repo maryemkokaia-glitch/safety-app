@@ -16,8 +16,17 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
   const [data, setData] = useState<AppData | null>(null);
   const [lang, setLangState] = useState<Lang>("ka");
   const [loading, setLoading] = useState(true);
+  const [timedOut, setTimedOut] = useState(false);
 
   const supabase = createClient();
+
+  // Hard timeout — never stay on loading screen more than 8 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) setTimedOut(true);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   // Fetch all data on mount when user is authenticated
   useEffect(() => {
@@ -312,36 +321,17 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
     });
   }, []);
 
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        <p className="text-sm text-gray-400">იტვირთება...</p>
-      </div>
-    );
-  }
-
-  if (!authUser) {
-    // Not authenticated — redirect to login
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-      </div>
-    );
-  }
-
-  if (!data) {
-    // Authenticated but data failed to load — show error with logout
+  // Timed out or no user — show escape buttons
+  if (timedOut || (!authLoading && !authUser)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6">
-        <p className="text-sm text-gray-500 text-center">მონაცემების ჩატვირთვა ვერ მოხერხდა</p>
+        <p className="text-sm text-gray-500 text-center">
+          {!authUser ? "სესია ამოიწურა" : "ჩატვირთვა ვერ მოხერხდა"}
+        </p>
         <div className="flex gap-3">
           <button
-            onClick={() => fetchAllData()}
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold"
+            onClick={() => { setTimedOut(false); setLoading(true); fetchAllData(); }}
+            className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold min-h-[48px]"
           >
             თავიდან ცდა
           </button>
@@ -351,7 +341,7 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
               await sb.auth.signOut();
               window.location.href = "/login";
             }}
-            className="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold"
+            className="px-5 py-3 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold min-h-[48px]"
           >
             გასვლა
           </button>
@@ -360,13 +350,39 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
     );
   }
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <p className="text-sm text-gray-400">იტვირთება...</p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    // Data failed — use empty defaults so app isn't stuck
+    const emptyData: AppData = {
+      lang,
+      currentRole: "inspector",
+      currentUser: authUser!,
+      projects: [],
+      templates: [],
+      inspections: [],
+      regulations: [],
+      notifications: [],
+      users: [],
+    };
+    setData(emptyData);
+    return null;
+  }
+
   const t_fn = (key: TranslationKey) => translate(key, lang);
 
   return (
     <DemoContext.Provider
       value={{
         data,
-        user: authUser,
+        user: authUser!,
         role: data.currentRole,
         lang,
         setRole,

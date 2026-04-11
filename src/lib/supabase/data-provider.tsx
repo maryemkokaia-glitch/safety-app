@@ -314,17 +314,48 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <p className="text-sm text-gray-400">იტვირთება...</p>
+      </div>
+    );
+  }
+
+  if (!authUser) {
+    // Not authenticated — redirect to login
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
   }
 
-  if (!authUser || !data) {
-    // Not authenticated — redirect handled by middleware
+  if (!data) {
+    // Authenticated but data failed to load — show error with logout
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6">
+        <p className="text-sm text-gray-500 text-center">მონაცემების ჩატვირთვა ვერ მოხერხდა</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => fetchAllData()}
+            className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold"
+          >
+            თავიდან ცდა
+          </button>
+          <button
+            onClick={async () => {
+              const sb = createClient();
+              await sb.auth.signOut();
+              window.location.href = "/login";
+            }}
+            className="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold"
+          >
+            გასვლა
+          </button>
+        </div>
       </div>
     );
   }

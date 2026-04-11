@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafetyApp - შრომის უსაფრთხოების მართვის პლატფორმა</title>
+    <meta name="description" content="საქართველოს პირველი შრომის უსაფრთხოების ციფრული პლატფორმა სამშენებლო კომპანიებისთვის. ინსპექტირება, ანგარიშგება, კანონმდებლობა — ერთ აპლიკაციაში.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue-50: #eff6ff;
+            --blue-100: #dbeafe;
+            --blue-200: #bfdbfe;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --blue-800: #1e40af;
+            --blue-900: #1e3a8a;
+            --amber-400: #fbbf24;
+            --amber-500: #f59e0b;
+            --green-500: #22c55e;
+            --green-600: #16a34a;
+            --red-500: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Noto Sans Georgian', sans-serif;
+            color: var(--gray-800);
+            line-height: 1.6;
+            background: #fff;
+            overflow-x: hidden;
+        }
+
+        /* ===== NAV ===== */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--gray-200);
+            transition: box-shadow 0.3s;
+        }
+        nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.08); }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 24px;
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 1.25rem; color: var(--blue-800);
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 36px; height: 36px; background: var(--blue-600);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 18px;
+        }
+        .nav-links { display: flex; gap: 28px; align-items: center; }
+        .nav-links a {
+            text-decoration: none; color: var(--gray-600); font-size: 0.9rem;
+            font-weight: 500; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--blue-600); }
+        .nav-cta {
+            background: var(--blue-600) !important; color: #fff !important;
+            padding: 8px 20px; border-radius: 8px; font-weight: 600;
+            transition: background 0.2s;
+        }
+        .nav-cta:hover { background: var(--blue-700) !important; }
+        .nav-mobile-btn { display: none; background: none; border: none; font-size: 24px; cursor: pointer; }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex; align-items: center;
+            background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-700) 50%, #2563eb 100%);
+            padding: 120px 24px 80px;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hero-inner {
+            max-width: 1200px; margin: 0 auto; width: 100%;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+            position: relative; z-index: 1;
+        }
+        .hero-text { color: #fff; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.15); padding: 6px 16px;
+            border-radius: 100px; font-size: 0.85rem; margin-bottom: 24px;
+            backdrop-filter: blur(4px);
+        }
+        .hero-badge-dot { width: 8px; height: 8px; background: var(--green-500); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .hero h1 {
+            font-size: 3.2rem; font-weight: 800; line-height: 1.15;
+            margin-bottom: 20px;
+        }
+        .hero h1 span { color: var(--amber-400); }
+        .hero p { font-size: 1.15rem; opacity: 0.9; margin-bottom: 36px; max-width: 500px; }
+        .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--amber-500); color: var(--gray-900);
+            padding: 14px 32px; border-radius: 12px; font-weight: 700;
+            font-size: 1rem; text-decoration: none; transition: all 0.2s;
+            border: none; cursor: pointer;
+        }
+        .btn-primary:hover { background: var(--amber-400); transform: translateY(-1px); }
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.1); color: #fff;
+            padding: 14px 32px; border-radius: 12px; font-weight: 600;
+            font-size: 1rem; text-decoration: none; transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .hero-visual {
+            display: flex; justify-content: center;
+        }
+        .hero-phone {
+            width: 280px; height: 560px;
+            background: #000; border-radius: 40px; padding: 12px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.4), 0 0 0 2px rgba(255,255,255,0.1);
+            position: relative; transform: perspective(800px) rotateY(-5deg);
+        }
+        .hero-phone-screen {
+            width: 100%; height: 100%; background: var(--blue-50);
+            border-radius: 30px; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .phone-header {
+            background: var(--blue-800); padding: 40px 16px 12px; color: #fff;
+            text-align: center;
+        }
+        .phone-header h3 { font-size: 0.9rem; font-weight: 600; }
+        .phone-header p { font-size: 0.7rem; opacity: 0.7; }
+        .phone-score {
+            margin: -20px auto 0; width: 80px; height: 80px;
+            background: var(--green-500); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 800; color: #fff;
+            box-shadow: 0 4px 15px rgba(34,197,94,0.4);
+            position: relative; z-index: 1;
+        }
+        .phone-items { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .phone-item {
+            background: #fff; padding: 10px 12px; border-radius: 10px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.7rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .phone-item-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .phone-item-dot.green { background: var(--green-500); }
+        .phone-item-dot.amber { background: var(--amber-500); }
+        .phone-item-dot.red { background: var(--red-500); }
+        .phone-bottom {
+            display: flex; justify-content: space-around;
+            padding: 10px 16px 20px; background: #fff;
+            border-top: 1px solid var(--gray-200);
+        }
+        .phone-tab { text-align: center; font-size: 0.55rem; color: var(--gray-500); }
+        .phone-tab.active { color: var(--blue-600); }
+        .phone-tab-icon { font-size: 1rem; margin-bottom: 2px; }
+
+        /* ===== STATS ===== */
+        .stats {
+            background: #fff; padding: 60px 24px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .stats-inner {
+            max-width: 1000px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;
+            text-align: center;
+        }
+        .stat-num { font-size: 2.5rem; font-weight: 800; color: var(--blue-700); }
+        .stat-label { font-size: 0.85rem; color: var(--gray-500); margin-top: 4px; }
+
+        /* ===== FEATURES ===== */
+        .features {
+            padding: 100px 24px; background: var(--gray-50);
+        }
+        .section-inner { max-width: 1200px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-tag {
+            display: inline-block; background: var(--blue-100); color: var(--blue-700);
+            padding: 4px 14px; border-radius: 100px; font-size: 0.8rem; font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .section-header h2 { font-size: 2.2rem; font-weight: 800; color: var(--gray-900); }
+        .section-header p { font-size: 1.05rem; color: var(--gray-500); margin-top: 12px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .feature-card {
+            background: #fff; border-radius: 16px; padding: 32px;
+            border: 1px solid var(--gray-200); transition: all 0.3s;
+        }
+        .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); border-color: var(--blue-200); }
+        .feature-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 20px;
+        }
+        .feature-icon.blue { background: var(--blue-100); }
+        .feature-icon.green { background: #dcfce7; }
+        .feature-icon.amber { background: #fef3c7; }
+        .feature-icon.red { background: #fee2e2; }
+        .feature-icon.purple { background: #f3e8ff; }
+        .feature-icon.teal { background: #ccfbf1; }
+        .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: var(--gray-900); }
+        .feature-card p { font-size: 0.9rem; color: var(--gray-500); line-height: 1.6; }
+
+        /* ===== HOW IT WORKS ===== */
+        .how-it-works {
+            padding: 100px 24px; background: #fff;
+        }
+        .steps {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+            margin-top: 20px;
+        }
+        .step { text-align: center; position: relative; }
+        .step-num {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--blue-600); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; font-weight: 800;
+            margin: 0 auto 20px; position: relative;
+        }
+        .step h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+        .step p { font-size: 0.9rem; color: var(--gray-500); max-width: 300px; margin: 0 auto; }
+        .step-connector {
+            position: absolute; top: 28px; left: calc(50% + 40px); right: calc(-50% + 40px);
+            height: 2px; background: var(--blue-200);
+        }
+
+        /* ===== ROLES ===== */
+        .roles {
+            padding: 100px 24px; background: var(--gray-50);
+        }
+        .roles-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .role-card {
+            background: #fff; border-radius: 16px; padding: 36px;
+            border: 1px solid var(--gray-200); text-align: center;
+        }
+        .role-icon { font-size: 48px; margin-bottom: 16px; }
+        .role-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        .role-card .role-title { color: var(--blue-600); font-size: 0.85rem; font-weight: 600; margin-bottom: 16px; }
+        .role-features { list-style: none; text-align: left; }
+        .role-features li {
+            padding: 8px 0; font-size: 0.85rem; color: var(--gray-600);
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+        .role-features li::before { content: '\2713'; color: var(--green-500); font-weight: 700; flex-shrink: 0; }
+
+        /* ===== REGULATIONS ===== */
+        .regulations {
+            padding: 100px 24px; background: #fff;
+        }
+        .reg-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+        }
+        .reg-content h2 { font-size: 2rem; font-weight: 800; margin-bottom: 16px; }
+        .reg-content p { color: var(--gray-500); margin-bottom: 24px; }
+        .reg-list { list-style: none; }
+        .reg-list li {
+            padding: 12px 0; border-bottom: 1px solid var(--gray-100);
+            display: flex; align-items: flex-start; gap: 12px;
+            font-size: 0.9rem;
+        }
+        .reg-list li span:first-child { font-size: 1.2rem; }
+        .reg-visual {
+            background: var(--blue-50); border-radius: 20px; padding: 40px;
+            border: 1px solid var(--blue-100);
+        }
+        .reg-card {
+            background: #fff; border-radius: 12px; padding: 20px;
+            margin-bottom: 16px; border-left: 4px solid var(--blue-600);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .reg-card:last-child { margin-bottom: 0; border-left-color: var(--amber-500); }
+        .reg-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+        .reg-card p { font-size: 0.8rem; color: var(--gray-500); }
+
+        /* ===== MEASUREMENT ===== */
+        .measurement {
+            padding: 100px 24px; background: var(--gray-50);
+        }
+        .measurement-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+        }
+        .measurement-visual {
+            background: #fff; border-radius: 20px; padding: 32px;
+            border: 1px solid var(--gray-200); box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .meas-item {
+            padding: 16px; border-radius: 12px; margin-bottom: 12px;
+            border: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center;
+        }
+        .meas-item:last-child { margin-bottom: 0; }
+        .meas-label { font-size: 0.85rem; font-weight: 600; }
+        .meas-sub { font-size: 0.75rem; color: var(--gray-500); }
+        .meas-value { text-align: right; }
+        .meas-num { font-size: 1.3rem; font-weight: 800; }
+        .meas-num.safe { color: var(--green-600); }
+        .meas-num.warn { color: var(--amber-500); }
+        .meas-num.danger { color: var(--red-500); }
+        .meas-badge {
+            font-size: 0.65rem; padding: 2px 8px; border-radius: 100px;
+            font-weight: 600; display: inline-block; margin-top: 2px;
+        }
+        .meas-badge.safe { background: #dcfce7; color: var(--green-600); }
+        .meas-badge.warn { background: #fef3c7; color: #92400e; }
+        .meas-badge.danger { background: #fee2e2; color: #991b1b; }
+
+        /* ===== CTA ===== */
+        .cta {
+            padding: 100px 24px;
+            background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-700) 100%);
+            text-align: center; color: #fff;
+        }
+        .cta h2 { font-size: 2.4rem; font-weight: 800; margin-bottom: 16px; }
+        .cta p { font-size: 1.1rem; opacity: 0.85; margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: var(--gray-900); color: var(--gray-300); padding: 60px 24px 30px;
+        }
+        .footer-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px;
+        }
+        .footer-brand h3 { color: #fff; font-size: 1.3rem; margin-bottom: 12px; }
+        .footer-brand p { font-size: 0.85rem; line-height: 1.7; }
+        .footer-col h4 { color: #fff; font-size: 0.9rem; margin-bottom: 16px; font-weight: 600; }
+        .footer-col a {
+            display: block; color: var(--gray-400); text-decoration: none;
+            font-size: 0.85rem; margin-bottom: 10px; transition: color 0.2s;
+        }
+        .footer-col a:hover { color: #fff; }
+        .footer-bottom {
+            max-width: 1200px; margin: 40px auto 0; padding-top: 20px;
+            border-top: 1px solid var(--gray-700);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.8rem; color: var(--gray-500);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .hero-inner { grid-template-columns: 1fr; text-align: center; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { margin-left: auto; margin-right: auto; }
+            .hero-buttons { justify-content: center; }
+            .hero-visual { margin-top: 40px; }
+            .hero-phone { transform: none; width: 240px; height: 480px; }
+            .features-grid { grid-template-columns: 1fr 1fr; }
+            .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+            .steps { grid-template-columns: 1fr; gap: 32px; }
+            .step-connector { display: none; }
+            .roles-grid { grid-template-columns: 1fr; }
+            .reg-grid, .measurement-grid { grid-template-columns: 1fr; }
+            .footer-inner { grid-template-columns: 1fr 1fr; }
+            .nav-links { display: none; }
+            .nav-mobile-btn { display: block; }
+        }
+        @media (max-width: 600px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.8rem; }
+            .stats-inner { grid-template-columns: 1fr 1fr; }
+            .footer-inner { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+    <div class="nav-inner">
+        <a href="#" class="nav-logo">
+            <div class="nav-logo-icon">S</div>
+            SafetyApp
+        </a>
+        <div class="nav-links">
+            <a href="#features">ფუნქციები</a>
+            <a href="#how">როგორ მუშაობს</a>
+            <a href="#roles">როლები</a>
+            <a href="#regulations">კანონმდებლობა</a>
+            <a href="#contact" class="nav-cta">დაგვიკავშირდით</a>
+        </div>
+        <button class="nav-mobile-btn" onclick="document.querySelector('.nav-links').classList.toggle('show')" aria-label="Menu">&#9776;</button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-text">
+            <div class="hero-badge">
+                <div class="hero-badge-dot"></div>
+                საქართველოში პირველი
+            </div>
+            <h1>შრომის უსაფრთხოება <span>ციფრულ ფორმატში</span></h1>
+            <p>სამშენებლო ობიექტების ინსპექტირება, გაზომვები, ფოტო დოკუმენტაცია და ანგარიშგება — ყველაფერი ერთ პლატფორმაზე. საქართველოს კანონმდებლობასთან სრული თავსებადობა.</p>
+            <div class="hero-buttons">
+                <a href="#contact" class="btn-primary">დემო მოთხოვნა &rarr;</a>
+                <a href="#features" class="btn-secondary">გაიგე მეტი</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-phone">
+                <div class="hero-phone-screen">
+                    <div class="phone-header">
+                        <h3>ობიექტი: თბილისი #12</h3>
+                        <p>ინსპექტირება: 2024-03-15</p>
+                    </div>
+                    <div class="phone-score">92%</div>
+                    <div class="phone-items">
+                        <div class="phone-item">
+                            <div class="phone-item-dot green"></div>
+                            <span>დამცავი აღჭურვილობა</span>
+                        </div>
+                        <div class="phone-item">
+                            <div class="phone-item-dot green"></div>
+                            <span>ხარაჩოები და პლატფორმები</span>
+                        </div>
+                        <div class="phone-item">
+                            <div class="phone-item-dot amber"></div>
+                            <span>ელექტრო უსაფრთხოება</span>
+                        </div>
+                        <div class="phone-item">
+                            <div class="phone-item-dot green"></div>
+                            <span>ტემპერატურა: 21.5 °C</span>
+                        </div>
+                        <div class="phone-item">
+                            <div class="phone-item-dot red"></div>
+                            <span>ხმაური: 87 dB</span>
+                        </div>
+                    </div>
+                    <div class="phone-bottom">
+                        <div class="phone-tab active"><div class="phone-tab-icon">&#128196;</div>პროექტები</div>
+                        <div class="phone-tab"><div class="phone-tab-icon">&#9989;</div>შემოწმება</div>
+                        <div class="phone-tab"><div class="phone-tab-icon">&#128202;</div>ანგარიში</div>
+                        <div class="phone-tab"><div class="phone-tab-icon">&#9881;</div>პარამეტრები</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+    <div class="stats-inner">
+        <div>
+            <div class="stat-num">18+</div>
+            <div class="stat-label">ინტეგრირებული რეგულაცია</div>
+        </div>
+        <div>
+            <div class="stat-num">7</div>
+            <div class="stat-label">ჩეკლისტის შაბლონი</div>
+        </div>
+        <div>
+            <div class="stat-num">3</div>
+            <div class="stat-label">მომხმარებლის როლი</div>
+        </div>
+        <div>
+            <div class="stat-num">100%</div>
+            <div class="stat-label">ქართული ინტერფეისი</div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-tag">ფუნქციები</div>
+            <h2>ყველაფერი რაც გჭირდებათ</h2>
+            <p>სრულფასოვანი პლატფორმა სამშენებლო უსაფრთხოების მართვისთვის</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon blue">&#128203;</div>
+                <h3>ჩეკლისტები და შაბლონები</h3>
+                <p>მოქნილი შაბლონების სისტემა. ადმინი ქმნის საკუთარ ჩეკლისტებს, ამატებს კატეგორიებს და შემოწმების პუნქტებს.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon green">&#128207;</div>
+                <h3>ციფრული ინსპექტირება</h3>
+                <p>ინსპექტორი ავსებს ჩეკლისტს ობიექტზე. თითოეულ პუნქტს ანიჭებს სტატუსს: უსაფრთხო, გაფრთხილება ან დარღვევა.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon amber">&#128247;</div>
+                <h3>ფოტო დოკუმენტაცია</h3>
+                <p>ყოველ დარღვევას თან ერთვის ფოტო მტკიცებულება. კამერიდან პირდაპირ ატვირთვა — მარტივად და სწრაფად.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon red">&#128200;</div>
+                <h3>უსაფრთხოების ქულა</h3>
+                <p>ავტომატურად გამოითვლება უსაფრთხოების პროცენტული ქულა. ფერადი ინდიკატორები ნათლად აჩვენებს მდგომარეობას.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon purple">&#128209;</div>
+                <h3>PDF ანგარიშები</h3>
+                <p>ერთი ღილაკით ჩამოტვირთეთ პროფესიონალური PDF ანგარიში ქართული ფონტებით, ცხრილებით და ქულის ბეჯით.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon teal">&#127777;</div>
+                <h3>გაზომვები და ნორმები</h3>
+                <p>ფიზიკური პარამეტრების გაზომვა: ტემპერატურა, ტენიანობა, ხმაური, განათება. ავტომატური შედარება ნორმებთან.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-tag">პროცესი</div>
+            <h2>როგორ მუშაობს</h2>
+            <p>სამი მარტივი ნაბიჯი უსაფრთხოების მართვისთვის</p>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-connector"></div>
+                <h3>ადმინი ქმნის პროექტს</h3>
+                <p>დაამატეთ სამშენებლო ობიექტი, აირჩიეთ ჩეკლისტის შაბლონი და მიანიჭეთ ინსპექტორი. ყველაფერი ერთ ადგილას.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-connector"></div>
+                <h3>ინსპექტორი ამოწმებს</h3>
+                <p>ინსპექტორი მიდის ობიექტზე, ავსებს ჩეკლისტს, იღებს ფოტოებს და აფიქსირებს გაზომვებს მობილურიდან.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>კლიენტი ხედავს ანგარიშს</h3>
+                <p>კლიენტი ხედავს რეალურ სურათს: ქულას, დარღვევებს, რეკომენდაციებს. ჩამოტვირთავს PDF ანგარიშს.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ROLES -->
+<section class="roles" id="roles">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-tag">მომხმარებლები</div>
+            <h2>სამი როლი, ერთი პლატფორმა</h2>
+            <p>ყველა მონაწილე ხედავს მხოლოდ იმას, რაც მას ეხება</p>
+        </div>
+        <div class="roles-grid">
+            <div class="role-card">
+                <div class="role-icon">&#128188;</div>
+                <h3>ადმინისტრატორი</h3>
+                <div class="role-title">სრული კონტროლი</div>
+                <ul class="role-features">
+                    <li>პროექტების შექმნა და მართვა</li>
+                    <li>ჩეკლისტის შაბლონების რედაქტირება</li>
+                    <li>ინსპექტორების მინიჭება</li>
+                    <li>ყველა ანგარიშის ხილვადობა</li>
+                    <li>რეგულაციების ბაზა</li>
+                </ul>
+            </div>
+            <div class="role-card">
+                <div class="role-icon">&#128477;</div>
+                <h3>ინსპექტორი</h3>
+                <div class="role-title">ობიექტზე მუშაობა</div>
+                <ul class="role-features">
+                    <li>ჩეკლისტის შევსება</li>
+                    <li>ფოტო დოკუმენტაცია</li>
+                    <li>ფიზიკური გაზომვები</li>
+                    <li>კომენტარების დამატება</li>
+                    <li>ინსპექტირების დასრულება</li>
+                </ul>
+            </div>
+            <div class="role-card">
+                <div class="role-icon">&#128101;</div>
+                <h3>კლიენტი</h3>
+                <div class="role-title">მხოლოდ ხილვადობა</div>
+                <ul class="role-features">
+                    <li>პროექტის სტატუსის ხილვა</li>
+                    <li>უსაფრთხოების ქულა</li>
+                    <li>ანგარიშების ნახვა</li>
+                    <li>PDF ჩამოტვირთვა</li>
+                    <li>დარღვევების ისტორია</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- REGULATIONS -->
+<section class="regulations" id="regulations">
+    <div class="section-inner">
+        <div class="reg-grid">
+            <div class="reg-content">
+                <div class="section-tag">კანონმდებლობა</div>
+                <h2>საქართველოს კანონმდებლობასთან სრული შესაბამისობა</h2>
+                <p>აპლიკაციაში ინტეგრირებულია 18+ რეგულაცია matsne.gov.ge-დან, მათ შორის:</p>
+                <ul class="reg-list">
+                    <li>
+                        <span>&#128220;</span>
+                        <div>
+                            <strong>საქართველოს ორგანული კანონი შრომის უსაფრთხოების შესახებ</strong>
+                            <br><small style="color: var(--gray-400);">ძირითადი სამართლებრივი ჩარჩო</small>
+                        </div>
+                    </li>
+                    <li>
+                        <span>&#128736;</span>
+                        <div>
+                            <strong>მძიმე, მავნე და საშიშპირობებიანი სამუშაოების ნუსხა</strong>
+                            <br><small style="color: var(--gray-400);">დადგენილება №381</small>
+                        </div>
+                    </li>
+                    <li>
+                        <span>&#127777;</span>
+                        <div>
+                            <strong>ფიზიკური ფაქტორების ზღვრული ნორმები</strong>
+                            <br><small style="color: var(--gray-400);">დადგენილება №69 (2014)</small>
+                        </div>
+                    </li>
+                    <li>
+                        <span>&#9889;</span>
+                        <div>
+                            <strong>ელექტრო უსაფრთხოების წესები</strong>
+                            <br><small style="color: var(--gray-400);">სამუშაო ადგილებზე</small>
+                        </div>
+                    </li>
+                    <li>
+                        <span>&#127959;</span>
+                        <div>
+                            <strong>სამშენებლო მოედანზე უსაფრთხოების მინ. მოთხოვნები</strong>
+                            <br><small style="color: var(--gray-400);">დადგენილება №112</small>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="reg-visual">
+                <div class="reg-card">
+                    <h4>&#128220; შრომის უსაფრთხოების შესახებ</h4>
+                    <p>მუხლი 1: ეს კანონი ადგენს შრომის უსაფრთხოების სფეროში ძირითად პრინციპებს...</p>
+                </div>
+                <div class="reg-card">
+                    <h4>&#127777; ფიზიკური ფაქტორების ნორმები</h4>
+                    <p>ტემპერატურა: 20-22°C | ტენიანობა: 40-60% | ხმაური: &le; 80 dB</p>
+                </div>
+                <div class="reg-card">
+                    <h4>&#128736; ინდივიდუალური დაცვის საშუალებები</h4>
+                    <p>დამსაქმებელი ვალდებულია უზრუნველყოს დასაქმებულები სათანადო დამცავი საშუალებებით...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MEASUREMENT -->
+<section class="measurement" id="measurement">
+    <div class="section-inner">
+        <div class="measurement-grid">
+            <div class="measurement-visual">
+                <h3 style="font-size: 1rem; margin-bottom: 20px; color: var(--gray-700);">&#127777; ფიზიკური ფაქტორების გაზომვა</h3>
+                <div class="meas-item">
+                    <div>
+                        <div class="meas-label">ჰაერის ტემპერატურა</div>
+                        <div class="meas-sub">ნორმა: 20-22 °C</div>
+                    </div>
+                    <div class="meas-value">
+                        <div class="meas-num safe">21.5</div>
+                        <div class="meas-badge safe">ნორმაში</div>
+                    </div>
+                </div>
+                <div class="meas-item">
+                    <div>
+                        <div class="meas-label">ფარდობითი ტენიანობა</div>
+                        <div class="meas-sub">ნორმა: 40-60 %RH</div>
+                    </div>
+                    <div class="meas-value">
+                        <div class="meas-num warn">63.2</div>
+                        <div class="meas-badge warn">გაფრთხილება</div>
+                    </div>
+                </div>
+                <div class="meas-item">
+                    <div>
+                        <div class="meas-label">ხმაურის დონე</div>
+                        <div class="meas-sub">ნორმა: &le; 80 dB</div>
+                    </div>
+                    <div class="meas-value">
+                        <div class="meas-num danger">87.4</div>
+                        <div class="meas-badge danger">დარღვევა</div>
+                    </div>
+                </div>
+                <div class="meas-item">
+                    <div>
+                        <div class="meas-label">განათება</div>
+                        <div class="meas-sub">ნორმა: &ge; 500 ლუქსი</div>
+                    </div>
+                    <div class="meas-value">
+                        <div class="meas-num safe">620</div>
+                        <div class="meas-badge safe">ნორმაში</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="section-tag">ინოვაცია</div>
+                <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 16px;">ინსტრუმენტალური გაზომვები</h2>
+                <p style="color: var(--gray-500); margin-bottom: 24px;">
+                    არა მხოლოდ ჩეკლისტი — რეალური გაზომვები. ინსპექტორი შეიყვანს მნიშვნელობას და აპლიკაცია ავტომატურად ადარებს საქართველოს ნორმატიულ მოთხოვნებთან (დადგენილება №69).
+                </p>
+                <ul class="reg-list">
+                    <li><span>&#127777;</span><div>ჰაერის ტემპერატურა და ტენიანობა</div></li>
+                    <li><span>&#128266;</span><div>ხმაურის დონე (დეციბელი)</div></li>
+                    <li><span>&#128161;</span><div>განათების ინტენსივობა (ლუქსი)</div></li>
+                    <li><span>&#128168;</span><div>ჰაერის მოძრაობის სიჩქარე</div></li>
+                </ul>
+                <p style="color: var(--gray-500); margin-top: 20px; font-size: 0.9rem;">
+                    &#9989; ნორმაში &rarr; მწვანე &nbsp; &#9888; გაფრთხილება &rarr; ყვითელი &nbsp; &#10060; დარღვევა &rarr; წითელი
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="contact">
+    <h2>მზად ხართ დასაწყებად?</h2>
+    <p>შეამოწმეთ თქვენი სამშენებლო ობიექტები ციფრულად. მოითხოვეთ დემო ან დაგვიკავშირდით დამატებითი ინფორმაციისთვის.</p>
+    <div class="cta-buttons">
+        <a href="mailto:info@safetyapp.ge" class="btn-primary">&#9993; info@safetyapp.ge</a>
+        <a href="tel:+995555000000" class="btn-secondary">&#128222; +995 555 00 00 00</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <h3>SafetyApp</h3>
+            <p>საქართველოს პირველი სრულფასოვანი შრომის უსაფრთხოების მართვის ციფრული პლატფორმა სამშენებლო ინდუსტრიისთვის.</p>
+        </div>
+        <div class="footer-col">
+            <h4>პლატფორმა</h4>
+            <a href="#features">ფუნქციები</a>
+            <a href="#how">როგორ მუშაობს</a>
+            <a href="#roles">როლები</a>
+            <a href="#measurement">გაზომვები</a>
+        </div>
+        <div class="footer-col">
+            <h4>რესურსები</h4>
+            <a href="#regulations">კანონმდებლობა</a>
+            <a href="https://matsne.gov.ge" target="_blank">matsne.gov.ge</a>
+            <a href="#">დოკუმენტაცია</a>
+        </div>
+        <div class="footer-col">
+            <h4>კონტაქტი</h4>
+            <a href="mailto:info@safetyapp.ge">info@safetyapp.ge</a>
+            <a href="tel:+995555000000">+995 555 00 00 00</a>
+            <a href="#">თბილისი, საქართველო</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>&copy; 2024 SafetyApp. ყველა უფლება დაცულია.</span>
+        <span>Made in Georgia &#127468;&#127466;</span>
+    </div>
+</footer>
+
+<script>
+    // Nav scroll effect
+    window.addEventListener('scroll', () => {
+        document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    // Mobile menu
+    const style = document.createElement('style');
+    style.textContent = `
+        @media (max-width: 900px) {
+            .nav-links.show {
+                display: flex !important; flex-direction: column;
+                position: absolute; top: 100%; left: 0; right: 0;
+                background: #fff; padding: 20px 24px; gap: 16px;
+                border-bottom: 1px solid var(--gray-200);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Animate on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .step, .role-card, .stat-num').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s, transform 0.6s';
+        observer.observe(el);
+    });
+</script>
+
+</body>
+</html>

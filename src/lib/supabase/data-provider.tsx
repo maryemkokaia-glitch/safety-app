@@ -13,36 +13,39 @@ import { DemoContext } from "../demo-context";
 
 export function SupabaseDataProvider({ children }: { children: React.ReactNode }) {
   const { user: authUser, loading: authLoading } = useAuth();
-  const [data, setData] = useState<AppData | null>(null);
   const [lang, setLangState] = useState<Lang>("ka");
-  const [loading, setLoading] = useState(true);
-  const [timedOut, setTimedOut] = useState(false);
 
   const supabase = createClient();
 
-  // Hard timeout — never stay on loading screen more than 8 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (loading) setTimedOut(true);
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [loading]);
+  // Initialize with empty data immediately — no loading screen
+  const makeEmptyData = (user: any): AppData => ({
+    lang,
+    currentRole: "inspector" as UserRole,
+    currentUser: user,
+    projects: [],
+    templates: [],
+    inspections: [],
+    regulations: [],
+    notifications: [],
+    users: [],
+  });
 
-  // Fetch all data on mount when user is authenticated
+  const [data, setData] = useState<AppData | null>(null);
+
+  // Set empty data as soon as user is available, then fetch in background
   useEffect(() => {
     if (authLoading) return;
-    if (!authUser) {
-      setLoading(false);
-      return;
+    if (!authUser) return;
+    // Immediately show empty data — no spinner
+    if (!data) {
+      setData(makeEmptyData(authUser));
     }
+    // Then fetch real data in background
     fetchAllData();
   }, [authUser, authLoading]);
 
   async function fetchAllData() {
-    if (!authUser) {
-      setLoading(false);
-      return;
-    }
+    if (!authUser) return;
 
     try {
       const results = await Promise.allSettled([
@@ -112,7 +115,6 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
         users: [],
       });
     }
-    setLoading(false);
   }
 
   const setLang = useCallback((newLang: Lang) => {
@@ -321,58 +323,23 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
     });
   }, []);
 
-  // Timed out or no user — show escape buttons
-  if (timedOut || (!authLoading && !authUser)) {
+  // Still loading auth — brief spinner (usually < 500ms)
+  if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6">
-        <p className="text-sm text-gray-500 text-center">
-          {!authUser ? "სესია ამოიწურა" : "ჩატვირთვა ვერ მოხერხდა"}
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => { setTimedOut(false); setLoading(true); fetchAllData(); }}
-            className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold min-h-[48px]"
-          >
-            თავიდან ცდა
-          </button>
-          <button
-            onClick={async () => {
-              const sb = createClient();
-              await sb.auth.signOut();
-              window.location.href = "/login";
-            }}
-            className="px-5 py-3 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold min-h-[48px]"
-          >
-            გასვლა
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        <p className="text-sm text-gray-400">იტვირთება...</p>
       </div>
     );
   }
 
+  // Not authenticated — redirect
+  if (!authUser) {
+    if (typeof window !== "undefined") window.location.href = "/login";
+    return null;
+  }
+
+  // No data yet (shouldn't happen, but safety net)
   if (!data) {
-    // Data failed — use empty defaults so app isn't stuck
-    const emptyData: AppData = {
-      lang,
-      currentRole: "inspector",
-      currentUser: authUser!,
-      projects: [],
-      templates: [],
-      inspections: [],
-      regulations: [],
-      notifications: [],
-      users: [],
-    };
-    setData(emptyData);
     return null;
   }
 

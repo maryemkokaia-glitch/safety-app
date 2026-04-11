@@ -1,17 +1,47 @@
 "use client";
 
-import { useDemo } from "@/lib/demo-context";
+import { useState } from "react";
+import { useDemo, generateId } from "@/lib/demo-context";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { MapPin, ChevronRight, ClipboardList, FolderOpen, AlertTriangle } from "lucide-react";
+import { MapPin, ChevronRight, ClipboardList, FolderOpen, AlertTriangle, Plus, X } from "lucide-react";
 
 export default function InspectorDashboard() {
-  const { data, user, t } = useDemo();
+  const { data, updateData, user, t } = useDemo();
   const router = useRouter();
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newAddress, setNewAddress] = useState("");
 
   const myInspections = data.inspections.filter((i) => i.inspector_id === user.id);
   const inProgress = myInspections.filter((i) => i.status === "in_progress");
   const activeProjects = data.projects.filter((p) => p.status === "active");
+
+  function addProject() {
+    if (!newName.trim()) return;
+    const projectId = generateId();
+    updateData((d) => ({
+      ...d,
+      projects: [
+        ...d.projects,
+        {
+          id: projectId,
+          company_id: "company-1",
+          name: newName.trim(),
+          address: newAddress.trim() || null,
+          status: "active",
+          client_id: null,
+          inspector_id: user.id,
+          created_at: new Date().toISOString(),
+        },
+      ],
+    }));
+    setNewName("");
+    setNewAddress("");
+    setShowAddProject(false);
+    router.push(`/inspector/project/${projectId}`);
+  }
 
   // Get inspection stats per project
   function getProjectStats(projectId: string) {
@@ -28,10 +58,60 @@ export default function InspectorDashboard() {
   return (
     <div className="pb-4">
       {/* Header */}
-      <div className="mb-5">
-        <h1 className="text-xl font-bold text-gray-900">{t("nav.projects")}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{user.full_name}</p>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">{t("nav.projects")}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{user.full_name}</p>
+        </div>
+        <button
+          onClick={() => setShowAddProject(true)}
+          className="w-10 h-10 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl flex items-center justify-center transition-colors shadow-sm"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
       </div>
+
+      {/* Add Project Form */}
+      {showAddProject && (
+        <div className="bg-white rounded-2xl border border-blue-200 shadow-sm p-5 mb-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-900">{t("project.new")}</h2>
+            <button onClick={() => setShowAddProject(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="space-y-3">
+            <Input
+              id="projectName"
+              placeholder={t("project.name")}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              autoFocus
+            />
+            <Input
+              id="projectAddress"
+              placeholder={t("project.address")}
+              value={newAddress}
+              onChange={(e) => setNewAddress(e.target.value)}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAddProject(false)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 min-h-[48px]"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                onClick={addProject}
+                disabled={!newName.trim()}
+                className="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 min-h-[48px] transition-colors"
+              >
+                {t("create")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* In Progress — quick access */}
       {inProgress.length > 0 && (

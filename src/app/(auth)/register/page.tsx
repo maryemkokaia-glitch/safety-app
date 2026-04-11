@@ -105,7 +105,7 @@ export default function RegisterPage() {
           <p className="text-sm font-semibold text-gray-900 bg-gray-50 rounded-xl px-4 py-2.5 mb-5">
             {email}
           </p>
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-left">
             <p className="text-sm text-amber-800 font-medium mb-1">რა უნდა გააკეთოთ:</p>
             <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
               <li>გახსენით თქვენი ელ-ფოსტა</li>
@@ -114,9 +114,34 @@ export default function RegisterPage() {
               <li>შემდეგ შედით აპლიკაციაში</li>
             </ol>
           </div>
+          {/* Sniper link — open email inbox */}
+          {(() => {
+            const domain = email.split("@")[1]?.toLowerCase();
+            const sniperLinks: Record<string, { url: string; label: string }> = {
+              "gmail.com": { url: "https://mail.google.com", label: "Gmail-ის გახსნა" },
+              "googlemail.com": { url: "https://mail.google.com", label: "Gmail-ის გახსნა" },
+              "outlook.com": { url: "https://outlook.live.com", label: "Outlook-ის გახსნა" },
+              "hotmail.com": { url: "https://outlook.live.com", label: "Outlook-ის გახსნა" },
+              "yahoo.com": { url: "https://mail.yahoo.com", label: "Yahoo Mail-ის გახსნა" },
+              "icloud.com": { url: "https://www.icloud.com/mail", label: "iCloud Mail-ის გახსნა" },
+              "mail.ru": { url: "https://mail.ru", label: "Mail.ru-ს გახსნა" },
+            };
+            const link = sniperLinks[domain];
+            if (!link) return null;
+            return (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base py-3.5 rounded-xl transition-colors text-center min-h-[52px] mb-3"
+              >
+                ✉️ {link.label}
+              </a>
+            );
+          })()}
           <Link
             href="/login"
-            className="block w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base py-3.5 rounded-xl transition-colors text-center min-h-[52px]"
+            className="block w-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold text-base py-3.5 rounded-xl transition-colors text-center min-h-[52px]"
           >
             შესვლაზე გადასვლა
           </Link>

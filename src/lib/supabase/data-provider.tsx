@@ -33,16 +33,16 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
   const [data, setData] = useState<AppData | null>(null);
 
   // Set empty data as soon as user is available, then fetch in background
+  // Use authUser?.id as dep to avoid infinite loop from object reference changes
+  const userId = authUser?.id;
   useEffect(() => {
     if (authLoading) return;
-    if (!authUser) return;
+    if (!authUser || !userId) return;
     // Immediately show empty data — no spinner
-    if (!data) {
-      setData(makeEmptyData(authUser));
-    }
+    setData((prev) => prev || makeEmptyData(authUser));
     // Then fetch real data in background
     fetchAllData();
-  }, [authUser, authLoading]);
+  }, [userId, authLoading]);
 
   async function fetchAllData() {
     if (!authUser) return;
@@ -136,12 +136,11 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
 
   const refresh = useCallback(() => {
     fetchAllData();
-  }, [authUser]);
+  }, [userId]);
 
   const reset = useCallback(() => {
-    // In Supabase mode, reset just refreshes from DB
     fetchAllData();
-  }, [authUser]);
+  }, [userId]);
 
   // === Supabase Mutations ===
 

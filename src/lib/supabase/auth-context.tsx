@@ -16,6 +16,19 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+function buildUserFromAuth(authUser: any): User {
+  return {
+    id: authUser.id,
+    email: authUser.email || "",
+    full_name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
+    phone: authUser.user_metadata?.phone || null,
+    role: authUser.user_metadata?.role || "inspector",
+    company_id: null,
+    avatar_url: null,
+    created_at: authUser.created_at,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,71 +36,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = createClient();
 
+    // Hard timeout — never block more than 3 seconds
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn("Auth check timed out");
+        setLoading(false);
+      }
+    }, 3000);
+
     async function getUser() {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          const { data: profile, error: profileError } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", authUser.id)
-            .single();
+        // First check session (fast, local)
+        const { data: { session } } = await supabase.auth.getSession();
 
-          if (profile) {
-            setUser(profile);
-          } else {
-            // Profile query failed — build user from auth metadata
-            console.warn("Profile not found, using auth metadata:", profileError?.message);
-            setUser({
-              id: authUser.id,
-              email: authUser.email || "",
-              full_name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
-              phone: authUser.user_metadata?.phone || null,
-              role: authUser.user_metadata?.role || "inspector",
-              company_id: null,
-              avatar_url: null,
-              created_at: authUser.created_at,
-            });
-          }
+        if (!session) {
+          setLoading(false);
+          return;
+        }
+
+        // Session exists — build user from it immediately
+        const authUser = session.user;
+        setUser(buildUserFromAuth(authUser));
+        setLoading(false);
+
+        // Then try to get profile in background (non-blocking)
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
+
+        if (profile) {
+          setUser(profile);
         }
       } catch (err) {
         console.error("Auth error:", err);
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     getUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
+        setUser(buildUserFromAuth(session.user));
+        // Background profile fetch
         const { data: profile } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
           .single();
-
-        if (profile) {
-          setUser(profile);
-        } else {
-          // Fallback to auth metadata
-          setUser({
-            id: session.user.id,
-            email: session.user.email || "",
-            full_name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
-            phone: session.user.user_metadata?.phone || null,
-            role: session.user.user_metadata?.role || "inspector",
-            company_id: null,
-            avatar_url: null,
-            created_at: session.user.created_at,
-          });
-        }
+        if (profile) setUser(profile);
       } else {
         setUser(null);
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function signOut() {

@@ -10,43 +10,45 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(url, key, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) =>
-          request.cookies.set(name, value)
-        );
-        supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
-      },
-    },
-  });
-
-  const { data: { user } } = await supabase.auth.getUser();
-
   const pathname = request.nextUrl.pathname;
-  const isAuthPage = pathname === "/login" || pathname === "/register";
-  const isDashboard = pathname.startsWith("/admin") || pathname.startsWith("/inspector") || pathname.startsWith("/client");
 
-  // Not logged in trying to access dashboard → redirect to login
-  if (!user && isDashboard) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    return NextResponse.redirect(loginUrl);
+  // Never block these paths
+  if (pathname === "/login" || pathname === "/register" || pathname === "/logout") {
+    return NextResponse.next();
   }
 
-  // Logged in trying to access auth pages → redirect to inspector
-  if (user && isAuthPage) {
-    const dashUrl = request.nextUrl.clone();
-    dashUrl.pathname = "/inspector";
-    return NextResponse.redirect(dashUrl);
+  let supabaseResponse = NextResponse.next({ request });
+
+  try {
+    const supabase = createServerClient(url, key, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    });
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const isDashboard = pathname.startsWith("/admin") || pathname.startsWith("/inspector") || pathname.startsWith("/client");
+
+    // Not logged in trying to access dashboard → redirect to login
+    if (!user && isDashboard) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      return NextResponse.redirect(loginUrl);
+    }
+  } catch {
+    // If auth check fails, let the request through — don't block
   }
 
   return supabaseResponse;
@@ -54,6 +56,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

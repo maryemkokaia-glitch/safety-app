@@ -38,14 +38,17 @@ export default function LoginPage() {
       });
 
       if (authError) {
-        if (authError.message.includes("Invalid login")) {
-          setError("არასწორი ელ-ფოსტა ან პაროლი");
-        } else if (authError.message.includes("Email not confirmed")) {
-          setError("ელ-ფოსტა არ არის დადასტურებული. შეამოწმეთ თქვენი ინბოქსი.");
-        } else if (authError.message.includes("Too many requests")) {
-          setError("ძალიან ბევრი მცდელობა. სცადეთ მოგვიანებით.");
+        const msg = authError.message.toLowerCase();
+        if (msg.includes("invalid login") || msg.includes("invalid_credentials")) {
+          setError("არასწორი ელ-ფოსტა ან პაროლი. შეამოწმეთ და სცადეთ თავიდან.");
+        } else if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+          setError("ელ-ფოსტა ჯერ არ არის დადასტურებული. შეამოწმეთ ინბოქსი (და სპამის საქაღალდე) და დააჭირეთ დადასტურების ბმულს.");
+        } else if (msg.includes("too many") || msg.includes("rate limit") || msg.includes("429")) {
+          setError("ძალიან ბევრი მცდელობა. გთხოვთ მოიცადოთ 1 წუთი და სცადოთ თავიდან.");
+        } else if (msg.includes("network") || msg.includes("fetch")) {
+          setError("კავშირის პრობლემა. შეამოწმეთ ინტერნეტი.");
         } else {
-          setError("შესვლა ვერ მოხერხდა. სცადეთ თავიდან.");
+          setError("შესვლა ვერ მოხერხდა: " + authError.message);
         }
         setLoading(false);
         return;

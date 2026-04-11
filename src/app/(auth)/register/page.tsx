@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Shield, Eye, EyeOff, AlertCircle, Loader2, CheckCircle } from "lucide-react";
+import { Shield, Eye, EyeOff, AlertCircle, Loader2, CheckCircle, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
@@ -30,6 +30,10 @@ export default function RegisterPage() {
       setError("შეიყვანეთ ელ-ფოსტა");
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("ელ-ფოსტის ფორმატი არასწორია");
+      return;
+    }
     if (password.length < 6) {
       setError("პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს");
       return;
@@ -47,69 +51,78 @@ export default function RegisterPage() {
           data: {
             full_name: fullName.trim(),
             role: "inspector",
+            phone: phone.trim() || undefined,
           },
         },
       });
 
       if (signUpError) {
-        if (signUpError.message.includes("already registered")) {
+        if (signUpError.message.includes("already registered") || signUpError.message.includes("already been registered")) {
           setError("ეს ელ-ფოსტა უკვე რეგისტრირებულია. სცადეთ შესვლა.");
-        } else if (signUpError.message.includes("valid email")) {
-          setError("შეიყვანეთ სწორი ელ-ფოსტა.");
-        } else if (signUpError.message.includes("password")) {
+        } else if (signUpError.message.includes("valid email") || signUpError.message.includes("invalid")) {
+          setError("შეიყვანეთ სწორი ელ-ფოსტის მისამართი.");
+        } else if (signUpError.message.includes("password") || signUpError.message.includes("weak")) {
           setError("პაროლი ძალიან სუსტია. გამოიყენეთ მინიმუმ 6 სიმბოლო.");
+        } else if (signUpError.message.includes("rate limit") || signUpError.message.includes("429")) {
+          setError("ძალიან ბევრი მცდელობა. გთხოვთ მოიცადოთ 1 წუთი.");
         } else if (signUpError.message.includes("Database error")) {
-          setError("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით.");
+          setError("სერვერის შეცდომა. გთხოვთ სცადოთ რამდენიმე წუთში.");
         } else {
-          setError(signUpError.message);
+          setError("რეგისტრაცია ვერ მოხერხდა: " + signUpError.message);
         }
         setLoading(false);
         return;
       }
 
-      // Update phone if provided
-      if (phone.trim() && signUpData.user) {
-        await supabase
-          .from("profiles")
-          .update({ phone: phone.trim() })
-          .eq("id", signUpData.user.id);
-      }
-
-      // Check if email confirmation is required
-      if (signUpData.user && !signUpData.session) {
-        // Email confirmation required
-        setSuccess(true);
-        setLoading(false);
+      // If session exists — email confirmation is OFF, go straight in
+      if (signUpData?.session) {
+        router.push("/inspector");
+        router.refresh();
         return;
       }
 
-      // Auto-logged in (no email confirmation)
-      router.push("/inspector");
-      router.refresh();
+      // No session — email confirmation required, show success screen
+      setSuccess(true);
+      setLoading(false);
     } catch (err) {
-      setError("კავშირის პრობლემა. შეამოწმეთ ინტერნეტი.");
+      setError("კავშირის პრობლემა. შეამოწმეთ ინტერნეტი და სცადეთ თავიდან.");
       setLoading(false);
     }
   }
 
-  // Success state - email confirmation needed
+  // Success state — email confirmation needed
   if (success) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-5">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 max-w-sm w-full text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <Mail className="w-8 h-8 text-blue-600" />
           </div>
-          <h2 className="text-lg font-bold text-gray-900 mb-2">რეგისტრაცია წარმატებულია!</h2>
-          <p className="text-sm text-gray-500 mb-6">
-            დადასტურების ბმული გაიგზავნა <strong className="text-gray-700">{email}</strong>-ზე. შეამოწმეთ თქვენი ინბოქსი.
+          <h2 className="text-xl font-bold text-gray-900 mb-2">შეამოწმეთ ელ-ფოსტა</h2>
+          <p className="text-sm text-gray-500 mb-2">
+            დადასტურების ბმული გაიგზავნა:
           </p>
+          <p className="text-sm font-semibold text-gray-900 bg-gray-50 rounded-xl px-4 py-2.5 mb-5">
+            {email}
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
+            <p className="text-sm text-amber-800 font-medium mb-1">რა უნდა გააკეთოთ:</p>
+            <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
+              <li>გახსენით თქვენი ელ-ფოსტა</li>
+              <li>იპოვეთ SafetyApp-ის წერილი</li>
+              <li>დააჭირეთ დადასტურების ბმულს</li>
+              <li>შემდეგ შედით აპლიკაციაში</li>
+            </ol>
+          </div>
           <Link
             href="/login"
-            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-base py-3.5 rounded-xl transition-colors text-center min-h-[52px]"
+            className="block w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base py-3.5 rounded-xl transition-colors text-center min-h-[52px]"
           >
             შესვლაზე გადასვლა
           </Link>
+          <p className="text-xs text-gray-400 mt-4">
+            ვერ იპოვეთ წერილი? შეამოწმეთ სპამის საქაღალდე.
+          </p>
         </div>
       </div>
     );

@@ -5,6 +5,7 @@
 import { useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDemo, generateId } from "@/lib/demo-context";
+import { cn } from "@/lib/utils/cn";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -289,8 +290,4 @@ export default function InspectorInspect() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
 }

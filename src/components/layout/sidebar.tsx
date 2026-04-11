@@ -8,7 +8,7 @@ import {
   Shield, LayoutDashboard, FolderOpen, Users, ClipboardList, BookOpen, History,
   X, RefreshCw, Settings, ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { TranslationKey } from "@/lib/i18n";
 
 interface NavItem { labelKey: TranslationKey; href: string; icon: React.ReactNode; }
@@ -30,9 +30,11 @@ export function Sidebar() {
   const bottomNavItems = navItems.slice(0, 5);
 
   // Force inspector role on mount if not already
-  if (role !== "inspector") {
-    setRole("inspector");
-  }
+  useEffect(() => {
+    if (role !== "inspector") {
+      setRole("inspector");
+    }
+  }, []);
 
   return (
     <>

@@ -56,6 +56,7 @@ export default function LoginPage() {
 
       // Get role and redirect
       const { data: { user } } = await supabase.auth.getUser();
+      setLoading(false);
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")

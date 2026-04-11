@@ -34,7 +34,7 @@ export function Sidebar() {
     if (role !== "inspector") {
       setRole("inspector");
     }
-  }, []);
+  }, [role, setRole]);
 
   return (
     <>

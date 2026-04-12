@@ -98,7 +98,7 @@ export default function InspectorProject() {
       {!showTemplatePicker ? (
         <button
           onClick={() => setShowTemplatePicker(true)}
-          className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl p-4 mb-5 flex items-center gap-3 transition-colors shadow-sm"
+          className="w-full bg-navy-800 hover:bg-navy-900 active:bg-navy-900 text-white rounded-2xl p-4 mb-5 flex items-center gap-3 transition-colors shadow-sm"
         >
           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
             <Plus className="w-5 h-5" />
@@ -122,7 +122,7 @@ export default function InspectorProject() {
               <ClipboardList className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-500 mb-3">{t("no_data")}</p>
               <Link href="/inspector/templates"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700">
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-navy-800 text-white text-sm font-semibold rounded-xl hover:bg-navy-900">
                 <Plus className="w-4 h-4" /> {t("template.new")}
               </Link>
             </div>
@@ -132,7 +132,7 @@ export default function InspectorProject() {
                 <button
                   key={tmpl.id}
                   onClick={() => startInspection(tmpl.id)}
-                  className="bg-white rounded-xl border-2 border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 active:bg-blue-50 p-4 text-left transition-all flex items-start gap-3"
+                  className="bg-white rounded-xl border-2 border-gray-100 hover:border-navy-300 hover:bg-orange-50/50 active:bg-orange-50 p-4 text-left transition-all flex items-start gap-3"
                 >
                   <span className="text-2xl mt-0.5">{categoryIcons[tmpl.category] || "📋"}</span>
                   <div className="flex-1 min-w-0">

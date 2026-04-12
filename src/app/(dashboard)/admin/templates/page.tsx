@@ -55,7 +55,7 @@ export default function TemplatesPage() {
               <CardContent>
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg mt-0.5"><ClipboardList className="w-5 h-5 text-blue-600" /></div>
+                    <div className="p-2 bg-orange-100 rounded-lg mt-0.5"><ClipboardList className="w-5 h-5 text-navy-800" /></div>
                     <div>
                       <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
                       <Badge variant="info" className="mt-1">{t(catLabels[template.category])}</Badge>

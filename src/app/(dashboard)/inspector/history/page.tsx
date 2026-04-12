@@ -29,14 +29,16 @@ export default function InspectionHistoryPage() {
 
   // Group by date
   const groups: { label: string; items: typeof inspections }[] = [];
-  const seen = new Set<string>();
+  const groupMap = new Map<string, typeof inspections>();
   for (const insp of inspections) {
     const label = getDateGroup(insp.started_at, t);
-    if (!seen.has(label)) {
-      seen.add(label);
-      groups.push({ label, items: [] });
+    let arr = groupMap.get(label);
+    if (!arr) {
+      arr = [];
+      groupMap.set(label, arr);
+      groups.push({ label, items: arr });
     }
-    groups.find((g) => g.label === label)!.items.push(insp);
+    arr.push(insp);
   }
 
   return (

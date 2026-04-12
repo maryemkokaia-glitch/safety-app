@@ -183,7 +183,7 @@ export default function AdminTemplateEditor() {
 
       {/* Template header card — Google Forms style */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-        <div className="h-2 bg-blue-600" />
+        <div className="h-2 bg-navy-800" />
         <div className="p-5">
           {editingName ? (
             <div className="flex items-center gap-2">
@@ -336,11 +336,11 @@ export default function AdminTemplateEditor() {
 
       {/* Add item — Google Forms style */}
       <form onSubmit={addItem} className="mt-4 mb-8">
-        <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors p-4 space-y-3">
+        <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-navy-400 transition-colors p-4 space-y-3">
           {/* Type toggle */}
           <div className="flex gap-1.5">
             <button type="button" onClick={() => setNewItemType("check")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${newItemType === "check" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${newItemType === "check" ? "bg-navy-800 text-white" : "bg-gray-100 text-gray-500"}`}>
               <ClipboardCheck className="w-3.5 h-3.5" /> {t("template.type_check")}
             </button>
             <button type="button" onClick={() => setNewItemType("measurement")}

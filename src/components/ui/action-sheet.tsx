@@ -70,10 +70,10 @@ export function ActionSheet({ open, onClose, title, options, value, onChange }: 
           {options.map((opt) => (
             <button key={opt.value} onClick={() => handleSelect(opt.value)}
               className={`w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors min-h-[52px] active:bg-gray-50
-                ${value === opt.value ? "bg-blue-50" : "hover:bg-gray-50"}`}>
+                ${value === opt.value ? "bg-orange-50" : "hover:bg-gray-50"}`}>
               {opt.icon && <span className="text-xl w-8 text-center shrink-0">{opt.icon}</span>}
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${value === opt.value ? "text-blue-700" : "text-gray-900"}`}>
+                <p className={`text-sm font-medium ${value === opt.value ? "text-navy-800" : "text-gray-900"}`}>
                   {opt.label}
                 </p>
                 {opt.description && (
@@ -81,7 +81,7 @@ export function ActionSheet({ open, onClose, title, options, value, onChange }: 
                 )}
               </div>
               {value === opt.value && (
-                <Check className="w-5 h-5 text-blue-600 shrink-0" />
+                <Check className="w-5 h-5 text-navy-800 shrink-0" />
               )}
             </button>
           ))}

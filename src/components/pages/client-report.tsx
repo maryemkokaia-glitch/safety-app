@@ -8,7 +8,7 @@ import { useDemo } from "@/lib/demo-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Loader2, CheckCircle, AlertTriangle, XCircle, MinusCircle, Calendar, User, MapPin, FileText, Ruler } from "lucide-react";
+import { ArrowLeft, Download, Loader2, CheckCircle, AlertTriangle, XCircle, MinusCircle, Calendar, User, MapPin, FileText, Ruler, Share2 } from "lucide-react";
 import { getScoreBgColor, getScoreLabel, getStatusLabel, getStatusColor, formatNormRange } from "@/lib/utils/safety-score";
 import { generatePDF } from "@/lib/utils/pdf";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -29,6 +29,7 @@ export default function ClientReport() {
   const { data, t, lang } = useDemo();
   const [generating, setGenerating] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [shared, setShared] = useState(false);
 
   useEffect(() => {
     if (pdfError) {
@@ -81,8 +82,8 @@ export default function ClientReport() {
       {/* Breadcrumb + Header */}
       <Breadcrumb
         items={[
-          { label: t("nav.dashboard"), href: "/inspector" },
-          { label: t("nav.history"), href: "/inspector/history" },
+          { label: t("nav.dashboard"), href: "/client" },
+          { label: t("client.all_reports"), href: "/client/reports" },
         ]}
         current={template?.name ?? "..."}
       />
@@ -96,13 +97,25 @@ export default function ClientReport() {
           <p className="text-xs text-gray-500 truncate">{project?.name}</p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <Button onClick={handleDownloadPDF} disabled={generating} variant="outline" size="sm">
-            {generating ? (
-              <><Loader2 className="w-4 h-4 mr-1 animate-spin" />{t("report.generating")}</>
-            ) : (
-              <><Download className="w-4 h-4 mr-1" />{t("report.download_pdf")}</>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => { setShared(true); setTimeout(() => setShared(false), 2000); }}
+              variant="outline" size="sm"
+            >
+              {shared ? (
+                <><CheckCircle className="w-4 h-4 mr-1 text-green-500" />{t("client.shared_success")}</>
+              ) : (
+                <><Share2 className="w-4 h-4 mr-1" />{t("client.share_report")}</>
+              )}
+            </Button>
+            <Button onClick={handleDownloadPDF} disabled={generating} variant="outline" size="sm">
+              {generating ? (
+                <><Loader2 className="w-4 h-4 mr-1 animate-spin" />{t("report.generating")}</>
+              ) : (
+                <><Download className="w-4 h-4 mr-1" />{t("report.download_pdf")}</>
+              )}
+            </Button>
+          </div>
           {pdfError && (
             <p className={`text-xs ${pdfError === t("report.font_warning") ? "text-amber-600" : "text-red-500"}`}>
               {pdfError}

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff, AlertCircle, Loader2, Mail } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff, AlertCircle, Loader2, Mail, Shield, ClipboardCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LogoFull } from "@/components/ui/logo";
@@ -33,7 +33,18 @@ const sniperLinks: Record<string, { url: string; labelKey: TranslationKey }> = {
   "mail.ru": { url: "https://mail.ru", labelKey: "auth.open_mailru" },
 };
 
-export default function RegisterPage() {
+import { Suspense } from "react";
+
+export default function RegisterPageWrapper() {
+  return <Suspense><RegisterPageInner /></Suspense>;
+}
+
+function RegisterPageInner() {
+  const searchParams = useSearchParams();
+  const roleParam = searchParams.get("role");
+  const [selectedRole, setSelectedRole] = useState<"client" | "inspector">(
+    roleParam === "client" ? "client" : "inspector"
+  );
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,7 +75,7 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: fullName.trim(),
-            role: "inspector",
+            role: selectedRole,
             phone: phone.trim() || undefined,
           },
         },
@@ -90,7 +101,7 @@ export default function RegisterPage() {
       }
 
       if (signUpData?.session) {
-        router.push("/inspector");
+        router.push(`/${selectedRole}`);
         router.refresh();
         return;
       }
@@ -165,7 +176,44 @@ export default function RegisterPage() {
       <div className="flex-1 px-5 pb-8">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 max-w-sm mx-auto w-full">
           <h2 className="text-lg font-bold text-gray-900 mb-1">{tr("auth.register")}</h2>
-          <p className="text-sm text-gray-500 mb-5">{tr("auth.register_subtitle")}</p>
+          <p className="text-sm text-gray-500 mb-4">{tr("auth.register_subtitle")}</p>
+
+          {/* Role Selection */}
+          <div className="mb-5">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">{tr("auth.select_role")}</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedRole("client")}
+                className={`flex flex-col items-center gap-1.5 p-3.5 rounded-xl border-2 transition-all min-h-[80px] ${
+                  selectedRole === "client"
+                    ? "border-navy-800 bg-orange-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <Shield className={`w-5 h-5 ${selectedRole === "client" ? "text-navy-800" : "text-gray-400"}`} />
+                <span className={`text-sm font-semibold ${selectedRole === "client" ? "text-navy-800" : "text-gray-700"}`}>
+                  {tr("auth.role_client")}
+                </span>
+                <span className="text-xs text-gray-400">{tr("auth.role_client_desc")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedRole("inspector")}
+                className={`flex flex-col items-center gap-1.5 p-3.5 rounded-xl border-2 transition-all min-h-[80px] ${
+                  selectedRole === "inspector"
+                    ? "border-navy-800 bg-orange-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <ClipboardCheck className={`w-5 h-5 ${selectedRole === "inspector" ? "text-navy-800" : "text-gray-400"}`} />
+                <span className={`text-sm font-semibold ${selectedRole === "inspector" ? "text-navy-800" : "text-gray-700"}`}>
+                  {tr("auth.role_inspector")}
+                </span>
+                <span className="text-xs text-gray-400">{tr("auth.role_inspector_desc")}</span>
+              </button>
+            </div>
+          </div>
 
           {error && (
             <div className="flex items-start gap-2.5 bg-red-50 text-red-700 text-sm p-3.5 rounded-xl mb-4 border border-red-100">

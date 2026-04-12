@@ -105,7 +105,7 @@ export default function InspectorDashboard() {
           <p className="text-sm text-blue-200 mb-3">{heroTemplate?.name}</p>
           <div className="flex items-center gap-3">
             <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white rounded-full transition-all" style={{ width: `${heroProgress}%` }} />
+              <div className="h-full bg-white rounded-full transition-[width] duration-500" style={{ width: `${heroProgress}%` }} />
             </div>
             <span className="text-sm font-bold text-white">{heroProgress}%</span>
             <ArrowRight className="w-4 h-4 text-blue-200" />
@@ -208,7 +208,7 @@ export default function InspectorDashboard() {
           </div>
           <div className="flex gap-3 pt-1">
             <button onClick={() => setShowAddProject(false)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 min-h-[48px]">{t("cancel")}</button>
-            <button onClick={addProject} disabled={!newName.trim()} className="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 min-h-[48px]">{t("create")}</button>
+            <button onClick={addProject} disabled={!newName.trim()} className="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-navy-800 disabled:bg-gray-200 disabled:text-gray-400 min-h-[48px]">{t("create")}</button>
           </div>
         </div>
       </Modal>

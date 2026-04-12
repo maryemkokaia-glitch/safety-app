@@ -18,7 +18,7 @@ export function Breadcrumb({ items, current }: BreadcrumbProps) {
         <span key={item.href} className="flex items-center gap-1 shrink-0">
           <Link
             href={item.href}
-            className="hover:text-blue-600 transition-colors whitespace-nowrap"
+            className="hover:text-navy-800 transition-colors whitespace-nowrap"
           >
             {item.label}
           </Link>

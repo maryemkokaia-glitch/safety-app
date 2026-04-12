@@ -24,7 +24,7 @@ export default function ClientDashboard() {
           {myProjects.map((project) => (
             <Link key={project.id} href={`/client/projects/${project.id}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                <CardContent><div className="flex items-center gap-3"><div className="p-2 bg-blue-100 rounded-lg"><FolderOpen className="w-5 h-5 text-blue-600" /></div><div><h3 className="font-semibold text-gray-900">{project.name}</h3><p className="text-xs text-gray-500">{project.address}</p></div></div></CardContent>
+                <CardContent><div className="flex items-center gap-3"><div className="p-2 bg-orange-100 rounded-lg"><FolderOpen className="w-5 h-5 text-navy-800" /></div><div><h3 className="font-semibold text-gray-900">{project.name}</h3><p className="text-xs text-gray-500">{project.address}</p></div></div></CardContent>
               </Card>
             </Link>
           ))}

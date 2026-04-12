@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { AppData, loadData, saveData, switchRole, resetData, generateId } from "./store";
 import type { User, UserRole } from "./database.types";
 import { t, type Lang, type TranslationKey } from "./i18n";
@@ -22,16 +22,28 @@ export const DemoContext = createContext<DemoContextType>(null!);
 
 export function DemoProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<AppData | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pendingDataRef = useRef<AppData | null>(null);
+
+  const debouncedSave = useCallback((newData: AppData) => {
+    pendingDataRef.current = newData;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      if (pendingDataRef.current) saveData(pendingDataRef.current);
+    }, 500);
+  }, []);
+
+  // Flush pending save on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (pendingDataRef.current) saveData(pendingDataRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const loaded = loadData();
-    // Default to inspector role for mobile app
-    if (loaded.currentRole !== "inspector") {
-      const updated = switchRole("inspector");
-      setData({ ...updated });
-    } else {
-      setData(loaded);
-    }
+    setData(loaded);
   }, []);
 
   const setRole = useCallback((role: UserRole) => {
@@ -43,19 +55,19 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => {
       if (!prev) return prev;
       const newData = { ...prev, lang };
-      saveData(newData);
+      debouncedSave(newData);
       return newData;
     });
-  }, []);
+  }, [debouncedSave]);
 
   const updateData = useCallback((updater: (data: AppData) => AppData) => {
     setData((prev) => {
       if (!prev) return prev;
       const newData = updater(prev);
-      saveData(newData);
+      debouncedSave(newData);
       return { ...newData };
     });
-  }, []);
+  }, [debouncedSave]);
 
   const refresh = useCallback(() => {
     setData(loadData());
@@ -78,7 +90,7 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   if (!data || !contextValue) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800" />
       </div>
     );
   }

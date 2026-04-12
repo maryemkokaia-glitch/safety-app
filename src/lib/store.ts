@@ -55,11 +55,33 @@ const demoClient: User = {
   created_at: new Date().toISOString(),
 };
 
+const demoInspector2: User = {
+  id: "inspector-2",
+  email: "dato@demo.ge",
+  full_name: "დათო ხარაჩოელი",
+  phone: "+995 555 789012",
+  role: "inspector",
+  company_id: "company-1",
+  avatar_url: null,
+  created_at: new Date().toISOString(),
+};
+
+const demoInspector3: User = {
+  id: "inspector-3",
+  email: "ana@demo.ge",
+  full_name: "ანა უსაფრთხოელი",
+  phone: "+995 555 345678",
+  role: "inspector",
+  company_id: "company-1",
+  avatar_url: null,
+  created_at: new Date().toISOString(),
+};
+
 // Demo Projects
 const demoProjects: Project[] = [
   { id: "proj-1", company_id: "company-1", name: "საცხოვრებელი კომპლექსი ვაკეში", address: "ჭავჭავაძის 45, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-1", client_emails: ["client@example.ge"], created_at: "2024-01-15T10:00:00Z" },
-  { id: "proj-2", company_id: "company-1", name: "ოფისის მშენებლობა საბურთალოზე", address: "პეკინის 12, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-1", client_emails: [], created_at: "2024-02-20T10:00:00Z" },
-  { id: "proj-3", company_id: "company-1", name: "სავაჭრო ცენტრი გლდანში", address: "ხიზანიშვილის 8, თბილისი", status: "paused", client_id: null, inspector_id: null, client_emails: [], created_at: "2024-03-10T10:00:00Z" },
+  { id: "proj-2", company_id: "company-1", name: "ოფისის მშენებლობა საბურთალოზე", address: "პეკინის 12, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-2", client_emails: [], created_at: "2024-02-20T10:00:00Z" },
+  { id: "proj-3", company_id: "company-1", name: "სავაჭრო ცენტრი გლდანში", address: "ხიზანიშვილის 8, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-3", client_emails: [], created_at: "2024-03-10T10:00:00Z" },
 ];
 
 // Checklist Templates with items
@@ -210,6 +232,84 @@ const demoInspections: InspectionWithItems[] = [
       { id: "ii-9", inspection_id: "insp-1", template_item_id: "ti-1-9", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[0].items[8], photos: [] },
     ],
   },
+  {
+    id: "insp-2",
+    project_id: "proj-2",
+    template_id: "tmpl-4",
+    inspector_id: "inspector-2",
+    status: "completed",
+    safety_score: 90,
+    notes: "აღკაზმულობა კარგ მდგომარეობაშია",
+    weather: null,
+    started_at: "2024-03-20T09:00:00Z",
+    completed_at: "2024-03-20T10:30:00Z",
+    items: [
+      { id: "ii-2-1", inspection_id: "insp-2", template_item_id: "ti-4-1", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[3].items[0], photos: [] },
+      { id: "ii-2-2", inspection_id: "insp-2", template_item_id: "ti-4-2", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[3].items[1], photos: [] },
+      { id: "ii-2-3", inspection_id: "insp-2", template_item_id: "ti-4-3", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[3].items[2], photos: [] },
+      { id: "ii-2-4", inspection_id: "insp-2", template_item_id: "ti-4-4", status: "warning", comment: "ზომა ცოტა დიდია", is_critical: false, template_item: demoTemplates[3].items[3], photos: [] },
+      { id: "ii-2-5", inspection_id: "insp-2", template_item_id: "ti-4-5", status: "safe", comment: null, is_critical: false, template_item: demoTemplates[3].items[4], photos: [] },
+    ],
+  },
+  {
+    id: "insp-3",
+    project_id: "proj-1",
+    template_id: "tmpl-6",
+    inspector_id: "inspector-1",
+    status: "completed",
+    safety_score: 60,
+    notes: "PPE-ის გამოყენება არასაკმარისია, აუცილებელია გამოსწორება",
+    weather: null,
+    started_at: "2024-04-01T08:00:00Z",
+    completed_at: "2024-04-01T09:30:00Z",
+    items: [
+      { id: "ii-3-1", inspection_id: "insp-3", template_item_id: "ti-6-1", status: "violation", comment: "3 მუშას არ ატარია ჩაფხუტი", is_critical: true, template_item: demoTemplates[5].items[0], photos: [] },
+      { id: "ii-3-2", inspection_id: "insp-3", template_item_id: "ti-6-2", status: "warning", comment: "რამდენიმე ჩაფხუტი დაზიანებულია", is_critical: false, template_item: demoTemplates[5].items[1], photos: [] },
+      { id: "ii-3-3", inspection_id: "insp-3", template_item_id: "ti-6-3", status: "violation", comment: "ხელთათმანები გახეული", is_critical: true, template_item: demoTemplates[5].items[2], photos: [] },
+      { id: "ii-3-4", inspection_id: "insp-3", template_item_id: "ti-6-4", status: "safe", comment: null, is_critical: false, template_item: demoTemplates[5].items[3], photos: [] },
+      { id: "ii-3-5", inspection_id: "insp-3", template_item_id: "ti-6-5", status: "warning", comment: null, is_critical: false, template_item: demoTemplates[5].items[4], photos: [] },
+    ],
+  },
+  {
+    id: "insp-4",
+    project_id: "proj-3",
+    template_id: "tmpl-5",
+    inspector_id: "inspector-3",
+    status: "completed",
+    safety_score: 95,
+    notes: "ყველაფერი ნორმაშია",
+    weather: null,
+    started_at: "2024-04-05T10:00:00Z",
+    completed_at: "2024-04-05T11:00:00Z",
+    items: [
+      { id: "ii-4-1", inspection_id: "insp-4", template_item_id: "ti-5-1", status: "safe", comment: null, is_critical: false, template_item: demoTemplates[4].items[0], photos: [] },
+      { id: "ii-4-2", inspection_id: "insp-4", template_item_id: "ti-5-2", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[4].items[1], photos: [] },
+      { id: "ii-4-3", inspection_id: "insp-4", template_item_id: "ti-5-3", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[4].items[2], photos: [] },
+      { id: "ii-4-4", inspection_id: "insp-4", template_item_id: "ti-5-4", status: "safe", comment: null, is_critical: false, template_item: demoTemplates[4].items[3], photos: [] },
+      { id: "ii-4-5", inspection_id: "insp-4", template_item_id: "ti-5-5", status: "warning", comment: "ვადა იწურება მომავალ თვეს", is_critical: false, template_item: demoTemplates[4].items[4], photos: [] },
+    ],
+  },
+  {
+    id: "insp-5",
+    project_id: "proj-2",
+    template_id: "tmpl-2",
+    inspector_id: "inspector-2",
+    status: "completed",
+    safety_score: 82,
+    notes: null,
+    weather: null,
+    started_at: "2024-04-10T14:00:00Z",
+    completed_at: "2024-04-10T15:30:00Z",
+    items: [
+      { id: "ii-5-1", inspection_id: "insp-5", template_item_id: "ti-2-1", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[1].items[0], photos: [] },
+      { id: "ii-5-2", inspection_id: "insp-5", template_item_id: "ti-2-2", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[1].items[1], photos: [] },
+      { id: "ii-5-3", inspection_id: "insp-5", template_item_id: "ti-2-3", status: "warning", comment: "მცირე რხევა ზედა ნაწილში", is_critical: true, template_item: demoTemplates[1].items[2], photos: [] },
+      { id: "ii-5-4", inspection_id: "insp-5", template_item_id: "ti-2-4", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[1].items[3], photos: [] },
+      { id: "ii-5-5", inspection_id: "insp-5", template_item_id: "ti-2-5", status: "safe", comment: null, is_critical: false, template_item: demoTemplates[1].items[4], photos: [] },
+      { id: "ii-5-6", inspection_id: "insp-5", template_item_id: "ti-2-6", status: "violation", comment: "სველი და მოცურებადი", is_critical: false, template_item: demoTemplates[1].items[5], photos: [] },
+      { id: "ii-5-7", inspection_id: "insp-5", template_item_id: "ti-2-7", status: "safe", comment: null, is_critical: true, template_item: demoTemplates[1].items[6], photos: [] },
+    ],
+  },
 ];
 
 function getDefaultData(): AppData {
@@ -224,7 +324,7 @@ function getDefaultData(): AppData {
     notifications: [
       { id: "notif-1", user_id: "admin-1", title: "დარღვევა: საცხოვრებელი კომპლექსი ვაკეში", body: "1 დარღვევა აღმოჩენილია ინსპექციის დროს. ქულა: 72%", type: "violation", is_read: false, related_inspection_id: "insp-1", created_at: "2024-03-15T11:30:00Z" },
     ],
-    users: [demoAdmin, demoInspector, demoClient],
+    users: [demoAdmin, demoInspector, demoInspector2, demoInspector3, demoClient],
   };
 }
 

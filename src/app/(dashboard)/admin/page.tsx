@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useDemo } from "@/lib/demo-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,16 +14,21 @@ export default function AdminDashboard() {
   const { data, t } = useDemo();
   const { findProject, findTemplate, findUser } = useDataLookup(data);
 
-  const allItems = data.inspections.flatMap((i) => i.items || []);
-  const violations = allItems.filter((item) => item.status === "violation");
-  const warnings = allItems.filter((item) => item.status === "warning");
-  const safeItems = allItems.filter((item) => item.status === "safe");
-  const pendingInspections = data.inspections.filter((i) => i.status === "in_progress");
-  const completedInspections = data.inspections.filter((i) => i.status === "completed");
-
-  // Average safety score
-  const scores = completedInspections.filter((i) => i.safety_score != null).map((i) => i.safety_score!) as number[];
-  const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+  const { allItems, violations, warnings, safeItems, pendingInspections, completedInspections, avgScore } = useMemo(() => {
+    const all = data.inspections.flatMap((i) => i.items || []);
+    let safe = 0, warn = 0, viol = 0;
+    const safeArr: typeof all = [], warnArr: typeof all = [], violArr: typeof all = [];
+    for (const item of all) {
+      if (item.status === "violation") { viol++; violArr.push(item); }
+      else if (item.status === "warning") { warn++; warnArr.push(item); }
+      else if (item.status === "safe") { safe++; safeArr.push(item); }
+    }
+    const pending = data.inspections.filter((i) => i.status === "in_progress");
+    const completed = data.inspections.filter((i) => i.status === "completed");
+    const scores = completed.filter((i) => i.safety_score != null).map((i) => i.safety_score!) as number[];
+    const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+    return { allItems: all, violations: violArr, warnings: warnArr, safeItems: safeArr, pendingInspections: pending, completedInspections: completed, avgScore: avg };
+  }, [data.inspections]);
 
   return (
     <div>
@@ -32,7 +38,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <Card>
           <CardContent className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-50 rounded-xl"><FolderOpen className="w-5 h-5 text-blue-600" /></div>
+            <div className="p-2.5 bg-orange-50 rounded-xl"><FolderOpen className="w-5 h-5 text-navy-800" /></div>
             <div><p className="text-2xl font-black text-gray-900">{data.projects.length}</p><p className="text-[11px] text-gray-500 font-medium">{t("dashboard.projects")}</p></div>
           </CardContent>
         </Card>
@@ -75,9 +81,9 @@ export default function AdminDashboard() {
           {allItems.length > 0 && (
             <div className="space-y-2">
               <div className="flex h-3 rounded-full overflow-hidden bg-gray-100">
-                {safeItems.length > 0 && <div className="bg-green-500 transition-all" style={{ width: `${(safeItems.length / allItems.length) * 100}%` }} />}
-                {warnings.length > 0 && <div className="bg-amber-400 transition-all" style={{ width: `${(warnings.length / allItems.length) * 100}%` }} />}
-                {violations.length > 0 && <div className="bg-red-500 transition-all" style={{ width: `${(violations.length / allItems.length) * 100}%` }} />}
+                {safeItems.length > 0 && <div className="bg-green-500 transition-[width]" style={{ width: `${(safeItems.length / allItems.length) * 100}%` }} />}
+                {warnings.length > 0 && <div className="bg-amber-400 transition-[width]" style={{ width: `${(warnings.length / allItems.length) * 100}%` }} />}
+                {violations.length > 0 && <div className="bg-red-500 transition-[width]" style={{ width: `${(violations.length / allItems.length) * 100}%` }} />}
               </div>
               <div className="flex items-center justify-between text-[11px] font-medium">
                 <span className="flex items-center gap-1 text-green-600"><CheckCircle className="w-3 h-3" /> {safeItems.length} {t("inspection.safe")}</span>
@@ -103,7 +109,7 @@ export default function AdminDashboard() {
       <Card>
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide">{t("dashboard.recent")}</h2>
-          <Link href="/admin/projects" className="text-xs text-blue-600 font-semibold hover:underline">{t("all")}</Link>
+          <Link href="/admin/projects" className="text-xs text-navy-800 font-semibold hover:underline">{t("all")}</Link>
         </div>
         <div className="divide-y divide-gray-100">
           {data.inspections.length === 0 ? (

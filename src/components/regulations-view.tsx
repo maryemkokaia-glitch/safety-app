@@ -63,7 +63,7 @@ export function RegulationsView() {
           {categories.map((cat) => (
             <button key={cat} onClick={() => setFilterCategory(cat)}
               className={`px-4 py-2.5 text-xs rounded-xl font-semibold whitespace-nowrap transition-all min-h-[40px] ${
-                filterCategory === cat ? "bg-blue-600 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                filterCategory === cat ? "bg-navy-800 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}>
               {cat === "all" ? t("all") : t(catLabels[cat])}
             </button>
@@ -116,8 +116,8 @@ function RegulationCard({ reg, t }: { reg: Regulation; t: (key: TranslationKey) 
     <Card className="hover:shadow-md transition-shadow">
       <CardContent>
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-            <BookOpen className="w-4 h-4 text-blue-600" />
+          <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+            <BookOpen className="w-4 h-4 text-navy-800" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 text-sm leading-snug">{reg.title}</h3>
@@ -125,7 +125,7 @@ function RegulationCard({ reg, t }: { reg: Regulation; t: (key: TranslationKey) 
             {reg.source_url && (
               <div className="mt-2.5">
                 <a href={reg.source_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors min-h-[32px]">
+                  className="flex items-center gap-1 text-xs font-semibold text-navy-800 hover:text-navy-900 transition-colors min-h-[32px]">
                   <ExternalLink className="w-3 h-3" /> matsne.gov.ge
                 </a>
               </div>

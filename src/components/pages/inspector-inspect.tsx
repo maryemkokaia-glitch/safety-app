@@ -69,9 +69,9 @@ const InspectionItemRow = memo(function InspectionItemRow({
       item.status === "warning" ? "bg-amber-50/50" :
       item.status === "safe" ? "bg-green-50/40" : ""
     )}>
-      <div className="px-4 py-3">
+      <div className="px-4 py-4">
         {/* Question text */}
-        <p className="text-[13px] font-medium text-gray-900 leading-snug mb-2">
+        <p className="text-[13px] font-medium text-gray-900 leading-snug mb-3">
           <span className="text-gray-400 mr-1.5">{idx + 1}.</span>
           {item.template_item?.text}
           {item.is_critical && <span className="text-red-500 ml-1">*</span>}
@@ -122,7 +122,7 @@ const InspectionItemRow = memo(function InspectionItemRow({
         )}
 
         {/* Comment + Photo — subtle inline actions */}
-        <div className="flex items-center mt-2 -mx-1">
+        <div className="flex items-center mt-3 -mx-1">
           <button onClick={() => onToggleExpand(item.id)}
             className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] font-medium transition-colors rounded-md",
               item.comment ? "text-blue-600" : "text-gray-350 hover:text-gray-500"
@@ -278,7 +278,7 @@ export default function InspectorInspect() {
       </div>
 
       {/* Checklist items */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 divide-y divide-gray-100">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 divide-y divide-gray-200">
         {items.map((item, idx) => (
           <InspectionItemRow
             key={item.id}

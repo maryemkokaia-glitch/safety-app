@@ -105,7 +105,7 @@ export default function InspectorProject() {
           </div>
           <div className="text-left flex-1">
             <p className="font-bold text-sm">{t("inspection.new")}</p>
-            <p className="text-xs text-blue-200">{t("inspection.pick_template")}</p>
+            <p className="text-xs text-navy-300">{t("inspection.pick_template")}</p>
           </div>
         </button>
       ) : (
@@ -139,7 +139,7 @@ export default function InspectorProject() {
                     <p className="text-sm font-semibold text-gray-900 leading-snug">{tmpl.name}</p>
                     <p className="text-xs text-gray-400 mt-1">{tmpl.items.length} {t("template.items")}</p>
                   </div>
-                  <Play className="w-4 h-4 text-blue-500 mt-1 shrink-0" />
+                  <Play className="w-4 h-4 text-navy-600 mt-1 shrink-0" />
                 </button>
               ))}
             </div>

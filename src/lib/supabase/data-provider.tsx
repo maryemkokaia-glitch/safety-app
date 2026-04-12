@@ -132,8 +132,11 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       if (!prev) return prev;
       const next = { ...updater(prev) };
 
-      // Detect template changes and sync to Supabase in background
-      syncTemplateChanges(prev, next);
+      // Only diff templates when the templates array actually changed
+      if (prev.templates !== next.templates) {
+        // Run sync outside the render cycle to avoid blocking
+        queueMicrotask(() => syncTemplateChanges(prev, next));
+      }
 
       return next;
     });
@@ -304,18 +307,22 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
   }, [authUser]);
 
   const updateInspectionItem = useCallback(async (itemId: string, fields: Record<string, any>) => {
-    // Optimistic local update only — no refetch
+    // Optimistic local update — only clone the affected inspection
     setData((prev) => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        inspections: prev.inspections.map((insp) => ({
-          ...insp,
-          items: insp.items.map((item) =>
-            item.id === itemId ? { ...item, ...fields } : item
-          ),
-        })),
+      const inspIdx = prev.inspections.findIndex((insp) =>
+        insp.items.some((item) => item.id === itemId)
+      );
+      if (inspIdx === -1) return prev;
+      const inspections = [...prev.inspections];
+      const insp = inspections[inspIdx];
+      inspections[inspIdx] = {
+        ...insp,
+        items: insp.items.map((item) =>
+          item.id === itemId ? { ...item, ...fields } : item
+        ),
       };
+      return { ...prev, inspections };
     });
 
     // Persist to Supabase in background — don't await
@@ -357,44 +364,52 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       if (error) console.error("Failed to save photo record:", error);
     });
 
-    // Optimistic local update
+    // Optimistic local update — only clone affected inspection
     setData((prev) => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        inspections: prev.inspections.map((insp) => ({
-          ...insp,
-          items: insp.items.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  photos: [
-                    ...(item.photos || []),
-                    { id: photoId, inspection_item_id: itemId, photo_url: photoUrl, caption: null, taken_at: new Date().toISOString() },
-                  ],
-                }
-              : item
-          ),
-        })),
+      const inspIdx = prev.inspections.findIndex((insp) =>
+        insp.items.some((item) => item.id === itemId)
+      );
+      if (inspIdx === -1) return prev;
+      const inspections = [...prev.inspections];
+      const insp = inspections[inspIdx];
+      inspections[inspIdx] = {
+        ...insp,
+        items: insp.items.map((item) =>
+          item.id === itemId
+            ? {
+                ...item,
+                photos: [
+                  ...(item.photos || []),
+                  { id: photoId, inspection_item_id: itemId, photo_url: photoUrl, caption: null, taken_at: new Date().toISOString() },
+                ],
+              }
+            : item
+        ),
       };
+      return { ...prev, inspections };
     });
   }, [authUser]);
 
   const removePhoto = useCallback(async (photoId: string, itemId: string) => {
-    // Optimistic local update
+    // Optimistic local update — only clone affected inspection
     setData((prev) => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        inspections: prev.inspections.map((insp) => ({
-          ...insp,
-          items: insp.items.map((item) =>
-            item.id === itemId
-              ? { ...item, photos: (item.photos || []).filter((p) => p.id !== photoId) }
-              : item
-          ),
-        })),
+      const inspIdx = prev.inspections.findIndex((insp) =>
+        insp.items.some((item) => item.id === itemId)
+      );
+      if (inspIdx === -1) return prev;
+      const inspections = [...prev.inspections];
+      const insp = inspections[inspIdx];
+      inspections[inspIdx] = {
+        ...insp,
+        items: insp.items.map((item) =>
+          item.id === itemId
+            ? { ...item, photos: (item.photos || []).filter((p) => p.id !== photoId) }
+            : item
+        ),
       };
+      return { ...prev, inspections };
     });
 
     // Delete in background

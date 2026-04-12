@@ -189,7 +189,7 @@ export default function AdminTemplateEditor() {
             <div className="flex items-center gap-2">
               <Input value={nameText} onChange={(e) => setNameText(e.target.value)} autoFocus
                 onKeyDown={(e) => e.key === "Enter" && saveName()}
-                className="flex-1 text-xl font-bold border-0 border-b-2 border-blue-500 rounded-none px-0 focus:ring-0 bg-transparent" />
+                className="flex-1 text-xl font-bold border-0 border-b-2 border-navy-800 rounded-none px-0 focus:ring-0 bg-transparent" />
               <Button size="sm" onClick={saveName}><Check className="w-4 h-4" /></Button>
               <Button size="sm" variant="ghost" onClick={() => setEditingName(false)}><X className="w-4 h-4" /></Button>
             </div>
@@ -226,8 +226,8 @@ export default function AdminTemplateEditor() {
               {/* Drop indicator line — above */}
               {isDropTarget && dropPosition === "above" && (
                 <div className="absolute -top-[2px] left-4 right-4 z-10">
-                  <div className="h-[3px] bg-blue-500 rounded-full" />
-                  <div className="absolute -left-[5px] -top-[4px] w-[11px] h-[11px] rounded-full bg-blue-500 border-2 border-white" />
+                  <div className="h-[3px] bg-navy-800 rounded-full" />
+                  <div className="absolute -left-[5px] -top-[4px] w-[11px] h-[11px] rounded-full bg-navy-800 border-2 border-white" />
                 </div>
               )}
 
@@ -243,13 +243,13 @@ export default function AdminTemplateEditor() {
                   bg-white rounded-lg border border-gray-200 shadow-sm my-2
                   transition-all duration-150 cursor-grab active:cursor-grabbing
                   ${isDragging ? "opacity-40 scale-[0.98]" : "hover:shadow-md hover:border-gray-300"}
-                  ${isDropTarget ? "border-blue-300" : ""}
+                  ${isDropTarget ? "border-navy-300" : ""}
                   overflow-hidden
                 `}
               >
                 <div className="flex">
                   {/* Left accent bar */}
-                  <div className={`w-1.5 shrink-0 ${item.is_critical ? "bg-red-500" : "bg-blue-500"}`} />
+                  <div className={`w-1.5 shrink-0 ${item.is_critical ? "bg-red-500" : "bg-navy-800"}`} />
 
                   <div className="flex-1 min-w-0">
                     {editingItemId === item.id ? (
@@ -275,7 +275,7 @@ export default function AdminTemplateEditor() {
 
                           {/* Text — click to edit */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-900 leading-relaxed cursor-text hover:text-blue-700 transition-colors"
+                            <p className="text-sm text-gray-900 leading-relaxed cursor-text hover:text-navy-800 transition-colors"
                               onClick={(e) => { e.stopPropagation(); setEditingItemId(item.id); setEditingText(item.text); }}>
                               {item.text}
                             </p>
@@ -318,8 +318,8 @@ export default function AdminTemplateEditor() {
               {/* Drop indicator line — below (only for last item) */}
               {isDropTarget && dropPosition === "below" && idx === items.length - 1 && (
                 <div className="absolute -bottom-[2px] left-4 right-4 z-10">
-                  <div className="h-[3px] bg-blue-500 rounded-full" />
-                  <div className="absolute -left-[5px] -top-[4px] w-[11px] h-[11px] rounded-full bg-blue-500 border-2 border-white" />
+                  <div className="h-[3px] bg-navy-800 rounded-full" />
+                  <div className="absolute -left-[5px] -top-[4px] w-[11px] h-[11px] rounded-full bg-navy-800 border-2 border-white" />
                 </div>
               )}
             </div>

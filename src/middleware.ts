@@ -1,4 +1,3 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
@@ -17,20 +16,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let supabaseResponse = NextResponse.next({ request });
-
   try {
+    const { createServerClient } = await import("@supabase/ssr");
+    let supabaseResponse = NextResponse.next({ request });
+
     const supabase = createServerClient(url, key, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
+        setAll(cookiesToSet: any[]) {
+          cookiesToSet.forEach(({ name, value }: any) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }: any) =>
             supabaseResponse.cookies.set(name, value, options)
           );
         },
@@ -38,20 +38,18 @@ export async function middleware(request: NextRequest) {
     });
 
     const { data: { user } } = await supabase.auth.getUser();
-
     const isDashboard = pathname.startsWith("/admin") || pathname.startsWith("/inspector") || pathname.startsWith("/client");
 
-    // Not logged in trying to access dashboard → redirect to login
     if (!user && isDashboard) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/login";
       return NextResponse.redirect(loginUrl);
     }
-  } catch {
-    // If auth check fails, let the request through — don't block
-  }
 
-  return supabaseResponse;
+    return supabaseResponse;
+  } catch {
+    return NextResponse.next();
+  }
 }
 
 export const config = {

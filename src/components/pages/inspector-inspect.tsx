@@ -121,18 +121,21 @@ const InspectionItemRow = memo(function InspectionItemRow({
           </div>
         )}
 
-        {/* Comment + Photo — subtle inline actions */}
-        <div className="flex items-center mt-3 -mx-1">
+        {/* Comment + Photo — assist chips, left aligned */}
+        <div className="flex items-center gap-2 mt-3">
           <button onClick={() => onToggleExpand(item.id)}
-            className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] font-medium transition-colors rounded-md",
-              item.comment ? "text-blue-600" : "text-gray-350 hover:text-gray-500"
+            className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+              item.comment
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
             )}>
             <MessageSquare className="w-3 h-3" />
-            {item.comment ? "✓" : statusLabels.comment}
+            {statusLabels.comment}{item.comment ? " ✓" : ""}
           </button>
-          <span className="w-px h-3 bg-gray-200" />
-          <label className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] font-medium cursor-pointer transition-colors rounded-md",
-            (item.photos?.length ?? 0) > 0 ? "text-blue-600" : "text-gray-350 hover:text-gray-500"
+          <label className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border cursor-pointer transition-colors",
+            (item.photos?.length ?? 0) > 0
+              ? "bg-blue-50 border-blue-200 text-blue-700"
+              : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
           )}>
             <Camera className="w-3 h-3" />
             {(item.photos?.length ?? 0) > 0 ? `${item.photos!.length} ფოტო` : statusLabels.photo}

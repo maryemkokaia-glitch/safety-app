@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, AlertTriangle, XCircle, MinusCircle, Send, ArrowLeft, MessageSquare, ChevronDown, Camera, X, Image, Ruler } from "lucide-react";
 import { calculateSafetyScore, getScoreBgColor, getScoreLabel, getStatusFromMeasurement, formatNormRange } from "@/lib/utils/safety-score";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { ChecklistItemStatus } from "@/lib/database.types";
 
 export default function InspectorInspect() {
@@ -21,7 +20,6 @@ export default function InspectorInspect() {
   const { data, updateData, t } = useDemo();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
-  const [weather, setWeather] = useState("");
   const [showSubmit, setShowSubmit] = useState(false);
 
   const inspection = data.inspections.find((i) => i.id === id);
@@ -68,7 +66,7 @@ export default function InspectorInspect() {
 
   function submitInspection() {
     const score = calculateSafetyScore(items);
-    updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, status: "completed", safety_score: score, notes: notes || null, weather: weather || null, completed_at: new Date().toISOString() } : insp) }));
+    updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, status: "completed", safety_score: score, notes: notes || null, completed_at: new Date().toISOString() } : insp) }));
     router.push("/inspector");
   }
   function updatePhotoCaption(itemId: string, photoId: string, caption: string) {
@@ -80,34 +78,25 @@ export default function InspectorInspect() {
   const progressPercent = items.length > 0 ? (completedCount / items.length) * 100 : 0;
 
   return (
-    <div className="max-w-xl mx-auto -mt-2">
-      {/* Breadcrumb + Header */}
-      <Breadcrumb
-        items={[
-          { label: t("nav.dashboard"), href: "/inspector" },
-          { label: project?.name ?? "...", href: `/inspector/project/${inspection.project_id}` },
-        ]}
-        current={template?.name ?? "..."}
-      />
-      <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => router.back()} aria-label="Back"
-          className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2">
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-bold text-gray-900 truncate">{template?.name}</h1>
-          <p className="text-xs text-gray-500 truncate">{project?.name}</p>
+    <div className="max-w-xl mx-auto">
+      {/* Sticky header + progress */}
+      <div className="sticky top-12 lg:top-0 z-10 bg-gray-50 pb-3 -mx-4 px-4 pt-1">
+        <div className="flex items-center gap-3 mb-2">
+          <button onClick={() => router.push(`/inspector/project/${inspection.project_id}`)} aria-label="Back"
+            className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2">
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-sm font-bold text-gray-900 truncate">{template?.name}</h1>
+            <p className="text-[11px] text-gray-400 truncate">{project?.name}</p>
+          </div>
+          <Badge className={cn(getScoreBgColor(score), "text-sm px-3 py-1 font-bold")}>{score}%</Badge>
         </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-4 mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-gray-500">{t("inspection.progress")}: {completedCount}/{items.length}</span>
-          <Badge className={`${getScoreBgColor(score)} text-sm px-3 py-1 font-bold`}>{score}%</Badge>
-        </div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <span className="text-[10px] text-gray-400 font-medium shrink-0">{completedCount}/{items.length}</span>
         </div>
       </div>
 
@@ -197,61 +186,49 @@ export default function InspectorInspect() {
                 )}
               </div>
 
-              {/* Comment & photo toggle */}
-              <button onClick={() => setExpandedItem(isExpanded ? null : item.id)}
-                aria-label={isExpanded ? "Collapse" : "Expand"}
-                aria-expanded={isExpanded}
-                className="w-full flex items-center justify-center gap-1 py-2.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 border-t border-gray-100">
-                <MessageSquare className="w-3.5 h-3.5" />
-                {t("inspection.comment")}{item.comment ? " *" : ""}
-                {(item.photos?.length ?? 0) > 0 && (
-                  <span className="ml-1 flex items-center gap-0.5">
-                    <Image className="w-3 h-3" /> {item.photos!.length}
-                  </span>
-                )}
-                <ChevronDown className={cn("w-3 h-3 transition-transform", isExpanded && "rotate-180")} />
-              </button>
+              {/* Quick actions: comment + photo — always visible */}
+              <div className="flex items-center border-t border-gray-100">
+                <button onClick={() => setExpandedItem(isExpanded ? null : item.id)}
+                  className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors min-h-[44px]",
+                    item.comment ? "text-blue-600" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                  )}>
+                  <MessageSquare className="w-4 h-4" />
+                  {t("inspection.comment")}{item.comment ? " ✓" : ""}
+                </button>
+                <div className="w-px h-6 bg-gray-100" />
+                <label className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium cursor-pointer transition-colors min-h-[44px]",
+                  (item.photos?.length ?? 0) > 0 ? "text-blue-600" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                )}>
+                  <Camera className="w-4 h-4" />
+                  {(item.photos?.length ?? 0) > 0 ? `${item.photos!.length} ფოტო` : t("inspection.add_photo")}
+                  <input type="file" accept="image/*" capture="environment" className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) addItemPhoto(item.id, f); e.target.value = ""; }} />
+                </label>
+              </div>
 
-              {/* Comment & photo area */}
+              {/* Comment area — expands on tap */}
               {isExpanded && (
                 <div className="px-4 pb-4 border-t border-gray-100 bg-gray-50/50">
-                  <div className="pt-3 space-y-3">
+                  <div className="pt-3">
                     <Textarea placeholder={t("inspection.comment") + "..."} value={item.comment || ""}
-                      onChange={(e) => updateItemComment(item.id, e.target.value)} />
+                      onChange={(e) => updateItemComment(item.id, e.target.value)} autoFocus />
+                  </div>
+                </div>
+              )}
 
-                    {/* Photo capture */}
-                    <div>
-                      <label className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 text-sm text-gray-500 hover:text-blue-600 cursor-pointer transition-colors active:scale-95">
-                        <Camera className="w-4 h-4" />
-                        {t("inspection.add_photo")}
-                        <input type="file" accept="image/*" capture="environment" className="hidden"
-                          onChange={(e) => { const f = e.target.files?.[0]; if (f) addItemPhoto(item.id, f); e.target.value = ""; }} />
-                      </label>
-                    </div>
-
-                    {/* Photo thumbnails with captions */}
-                    {(item.photos?.length ?? 0) > 0 && (
-                      <div className="space-y-2">
-                        {item.photos!.map((photo) => (
-                          <div key={photo.id} className="flex items-start gap-2 bg-white rounded-xl border border-gray-200 p-2">
-                            <div className="relative shrink-0">
-                              <img src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg" loading="lazy" />
-                              <button onClick={() => removeItemPhoto(item.id, photo.id)}
-                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm">
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                            <input
-                              type="text"
-                              placeholder={t("inspection.photo_caption")}
-                              value={photo.caption || ""}
-                              onChange={(e) => updatePhotoCaption(item.id, photo.id, e.target.value)}
-                              className="flex-1 text-xs border-0 bg-transparent py-1 px-0 placeholder-gray-400 focus:outline-none focus:ring-0 min-h-[32px]"
-                            />
-                          </div>
-                        ))}
+              {/* Photo thumbnails — always visible if photos exist */}
+              {(item.photos?.length ?? 0) > 0 && (
+                <div className="px-4 pb-3 border-t border-gray-100 pt-2">
+                  <div className="flex gap-2 overflow-x-auto">
+                    {item.photos!.map((photo) => (
+                      <div key={photo.id} className="relative shrink-0">
+                        <img src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg" loading="lazy" />
+                        <button onClick={() => removeItemPhoto(item.id, photo.id)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm">
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               )}
@@ -260,45 +237,28 @@ export default function InspectorInspect() {
         })}
       </div>
 
-      {/* Weather & notes */}
+      {/* Notes */}
       <Card className="mb-4">
         <CardContent>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t("inspection.weather")}</label>
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { value: "sunny", icon: "☀️", label: t("weather.sunny") },
-                  { value: "cloudy", icon: "☁️", label: t("weather.cloudy") },
-                  { value: "rainy", icon: "🌧️", label: t("weather.rainy") },
-                  { value: "windy", icon: "💨", label: t("weather.windy") },
-                ].map((w) => (
-                  <button key={w.value} onClick={() => setWeather(weather === w.value ? "" : w.value)}
-                    className={cn(
-                      "flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-medium transition-all border-2 min-h-[52px]",
-                      weather === w.value ? "border-blue-300 bg-blue-50 text-blue-700" : "border-transparent bg-gray-50 text-gray-500 active:scale-95"
-                    )}>
-                    <span className="text-lg">{w.icon}</span>
-                    <span>{w.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <Textarea label={t("inspection.notes")} placeholder={t("inspection.notes_placeholder")}
-              value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
-          </div>
+          <Textarea label={t("inspection.notes")} placeholder={t("inspection.notes_placeholder")}
+            value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
         </CardContent>
       </Card>
 
-      {/* Submit button — full width, prominent */}
-      <div className="pb-4">
-        <Button onClick={() => setShowConfirm(true)} size="lg" className="w-full text-base">
-          <Send className="w-5 h-5 mr-2" />
-          {t("inspection.finish")} — {score}% {getScoreLabel(score)}
-        </Button>
-        <p className="text-center text-xs text-gray-400 mt-2">
-          {items.filter((i) => i.status === "violation").length} {t("inspection.violation")} · {items.filter((i) => i.status === "warning").length} {t("inspection.warning")}
-        </p>
+      {/* Spacer for fixed button */}
+      <div className="h-24" />
+
+      {/* Submit button — fixed at bottom */}
+      <div className="fixed bottom-16 left-0 right-0 z-20 px-4 pb-2 lg:pl-68">
+        <div className="max-w-xl mx-auto">
+          <Button onClick={() => setShowConfirm(true)} size="lg" className="w-full text-base shadow-lg shadow-blue-600/20">
+            <Send className="w-5 h-5 mr-2" />
+            {t("inspection.finish")} — {score}% {getScoreLabel(score)}
+          </Button>
+          <p className="text-center text-xs text-gray-400 mt-1.5 bg-gray-50/80">
+            {items.filter((i) => i.status === "violation").length} {t("inspection.violation")} · {items.filter((i) => i.status === "warning").length} {t("inspection.warning")}
+          </p>
+        </div>
       </div>
 
       {/* Confirmation dialog */}

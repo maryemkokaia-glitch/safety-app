@@ -2,7 +2,7 @@ export type Lang = "ka" | "en";
 
 export const translations = {
   // Common
-  "app.name": { ka: "SafetyApp", en: "SafetyApp" },
+  "app.name": { ka: "Sarke", en: "Sarke" },
   "app.tagline": { ka: "სამშენებლო უსაფრთხოების მართვის სისტემა", en: "Construction Safety Management System" },
   "demo": { ka: "DEMO", en: "DEMO" },
   "back": { ka: "უკან", en: "Back" },
@@ -102,6 +102,10 @@ export const translations = {
   "project.new": { ka: "ახალი პროექტი", en: "New Project" },
   "project.name": { ka: "პროექტის სახელი", en: "Project Name" },
   "project.address": { ka: "მისამართი", en: "Address" },
+  "project.client_emails": { ka: "კლიენტის ელ-ფოსტა", en: "Client Email" },
+  "project.client_emails_placeholder": { ka: "მაგ: client@company.ge", en: "e.g. client@company.ge" },
+  "project.client_emails_hint": { ka: "მძიმით გამოყავით რამდენიმე", en: "Separate multiple with commas" },
+  "inspection.send_to_client": { ka: "ანგარიშის გაგზავნა კლიენტთან", en: "Send report to client" },
   "project.no_projects": { ka: "ჯერ არ არის პროექტები", en: "No projects yet" },
   "project.create_first": { ka: "შექმენით პირველი პროექტი", en: "Create first project" },
   "project.created": { ka: "შექმნის თარიღი", en: "Created" },
@@ -198,7 +202,7 @@ export const translations = {
   "auth.confirm_sent": { ka: "დადასტურების ბმული გაიგზავნა:", en: "Confirmation link sent to:" },
   "auth.what_to_do": { ka: "რა უნდა გააკეთოთ:", en: "What to do:" },
   "auth.step_open_email": { ka: "გახსენით თქვენი ელ-ფოსტა", en: "Open your email" },
-  "auth.step_find_email": { ka: "იპოვეთ SafetyApp-ის წერილი", en: "Find the SafetyApp email" },
+  "auth.step_find_email": { ka: "იპოვეთ Sarke-ის წერილი", en: "Find the Sarke email" },
   "auth.step_click_link": { ka: "დააჭირეთ დადასტურების ბმულს", en: "Click the confirmation link" },
   "auth.step_sign_in": { ka: "შემდეგ შედით აპლიკაციაში", en: "Then sign in to the app" },
   "auth.check_spam": { ka: "ვერ იპოვეთ წერილი? შეამოწმეთ სპამის საქაღალდე.", en: "Can't find it? Check your spam folder." },
@@ -227,6 +231,29 @@ export const translations = {
   // Landing
   "landing.enter_demo": { ka: "შედით დემო ვერსიაში", en: "Enter Demo" },
   "landing.demo_login": { ka: "დემო შესვლა", en: "Demo Login" },
+  "landing.hero_title": { ka: "სამშენებლო უსაფრთხოების პლატფორმა", en: "Construction Safety Platform" },
+  "landing.hero_subtitle": { ka: "დააკავშირეთ კლიენტები სერტიფიცირებულ უსაფრთხოების ინსპექტორებთან. მართეთ ინსპექციები, გენერირეთ ანგარიშები და დაიცავით რეგულაციები.", en: "Connect clients with certified safety inspectors. Manage inspections, generate reports, and stay compliant with regulations." },
+  "landing.find_expert": { ka: "მოძებნე ექსპერტი", en: "Find an Expert" },
+  "landing.i_am_expert": { ka: "მე ვარ ექსპერტი", en: "I am an Expert" },
+  "landing.for_clients": { ka: "კლიენტებისთვის", en: "For Clients" },
+  "landing.for_experts": { ka: "ექსპერტებისთვის", en: "For Experts" },
+  "landing.client_benefit_1": { ka: "უფასო რეგისტრაცია", en: "Free registration" },
+  "landing.client_benefit_2": { ka: "მოძებნეთ სერტიფიცირებული ინსპექტორები", en: "Find certified inspectors" },
+  "landing.client_benefit_3": { ka: "მიიღეთ PDF ანგარიშები", en: "Receive PDF reports" },
+  "landing.client_benefit_4": { ka: "თვალყური ადევნეთ პროექტის უსაფრთხოებას", en: "Track project safety" },
+  "landing.expert_benefit_1": { ka: "მართეთ ინსპექციები ეფექტურად", en: "Manage inspections efficiently" },
+  "landing.expert_benefit_2": { ka: "შემოწმების შაბლონები", en: "Checklist templates" },
+  "landing.expert_benefit_3": { ka: "ფოტო დოკუმენტაცია", en: "Photo documentation" },
+  "landing.expert_benefit_4": { ka: "ავტომატური PDF ანგარიშები", en: "Automatic PDF reports" },
+  "landing.free_badge": { ka: "უფასო", en: "Free" },
+  "landing.pro_badge": { ka: "პროფესიონალური", en: "Professional" },
+  "landing.public_regs_title": { ka: "უსაფრთხოების რეგულაციები", en: "Safety Regulations" },
+  "landing.public_regs_subtitle": { ka: "იპოვეთ საქართველოს სამშენებლო უსაფრთხოების რეგულაციები", en: "Browse Georgian construction safety regulations" },
+  "landing.view_all_regs": { ka: "ყველას ნახვა", en: "View All" },
+  "landing.show_less": { ka: "ნაკლების ჩვენება", en: "Show Less" },
+  "landing.cta_title": { ka: "მზად ხართ დასაწყებად?", en: "Ready to get started?" },
+  "landing.cta_subtitle": { ka: "შეუერთდით პლატფორმას და გააუმჯობესეთ სამშენებლო უსაფრთხოება", en: "Join the platform and improve construction safety" },
+  "landing.cta_register": { ka: "დარეგისტრირდი უფასოდ", en: "Register for Free" },
   "landing.features.inspections": { ka: "ინსპექციები", en: "Inspections" },
   "landing.features.inspections_desc": { ka: "წინასწარ განსაზღვრული ჩეკლისტები ხარაჩოების, აღჭურვილობისა და PPE-ის შესამოწმებლად", en: "Predefined checklists for scaffolding, equipment, and PPE inspection" },
   "landing.features.photos": { ka: "ფოტო დოკუმენტაცია", en: "Photo Documentation" },
@@ -235,6 +262,13 @@ export const translations = {
   "landing.features.reports_desc": { ka: "ავტომატურად გენერირებული PDF ანგარიშები კლიენტებისთვის", en: "Auto-generated PDF reports for clients" },
   "landing.features.regs": { ka: "რეგულაციები", en: "Regulations" },
   "landing.features.regs_desc": { ka: "საქართველოს უსაფრთხოების რეგულაციები ხელმისაწვდომი და მოსაძიებელი", en: "Georgian safety regulations searchable and accessible" },
+
+  // Auth - Role Selection
+  "auth.select_role": { ka: "აირჩიეთ როლი", en: "Select your role" },
+  "auth.role_client": { ka: "კლიენტი", en: "Client" },
+  "auth.role_client_desc": { ka: "მჭირდება ინსპექტორი", en: "I need an inspector" },
+  "auth.role_inspector": { ka: "ინსპექტორი", en: "Inspector" },
+  "auth.role_inspector_desc": { ka: "მე ვარ ექსპერტი", en: "I am an expert" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

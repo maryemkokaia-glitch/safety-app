@@ -1,11 +1,11 @@
 {
-  "name": "SafetyApp - სამშენებლო უსაფრთხოება",
-  "short_name": "SafetyApp",
+  "name": "Sarke - სამშენებლო უსაფრთხოება",
+  "short_name": "Sarke",
   "description": "სამშენებლო ობიექტების უსაფრთხოების მართვის სისტემა",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
-  "theme_color": "#1e40af",
+  "theme_color": "#1a365d",
   "orientation": "portrait",
   "icons": [
     {

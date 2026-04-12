@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Shield, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LogoIcon } from "@/components/ui/logo";
 import { createClient } from "@/lib/supabase/client";
 import { t, type Lang, type TranslationKey } from "@/lib/i18n";
 
@@ -86,10 +87,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Branding */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 pb-4 pt-12">
-        <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-blue-600/20">
-          <Shield className="w-8 h-8 text-white" />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900">{tr("app.name")}</h1>
+        <LogoIcon size="lg" className="mb-4 shadow-lg shadow-navy-800/20" />
+        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Sar<span className="text-orange-500">ke</span></h1>
         <p className="text-sm text-gray-500 mt-1">{tr("auth.safety_mgmt")}</p>
       </div>
 
@@ -157,7 +156,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500 mt-5">
           {tr("auth.no_account")}{" "}
-          <Link href="/register" className="text-blue-600 font-semibold hover:underline">
+          <Link href="/register" className="text-navy-800 font-semibold hover:underline">
             {tr("auth.register")}
           </Link>
         </p>

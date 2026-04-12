@@ -1,0 +1,10 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect rx="96" width="512" height="512" fill="#1a365d"/>
+  <!-- Mirror shape: two reflected angular forms -->
+  <path d="M256 96 L352 224 L256 224 Z" fill="#f59e0b"/>
+  <path d="M256 224 L160 352 L256 352 Z" fill="#f59e0b" opacity="0.5"/>
+  <!-- Accent line between reflections -->
+  <rect x="160" y="218" width="192" height="12" rx="6" fill="white" opacity="0.3"/>
+  <!-- S letterform -->
+  <text x="256" y="456" text-anchor="middle" fill="white" font-size="96" font-weight="800" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-4">S</text>
+</svg>

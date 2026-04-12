@@ -49,6 +49,7 @@ export interface Project {
   status: ProjectStatus;
   client_id: string | null;
   inspector_id: string | null;
+  client_emails: string[];
   created_at: string;
   // Joined fields
   client?: User;

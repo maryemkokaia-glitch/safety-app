@@ -57,9 +57,9 @@ const demoClient: User = {
 
 // Demo Projects
 const demoProjects: Project[] = [
-  { id: "proj-1", company_id: "company-1", name: "საცხოვრებელი კომპლექსი ვაკეში", address: "ჭავჭავაძის 45, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-1", created_at: "2024-01-15T10:00:00Z" },
-  { id: "proj-2", company_id: "company-1", name: "ოფისის მშენებლობა საბურთალოზე", address: "პეკინის 12, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-1", created_at: "2024-02-20T10:00:00Z" },
-  { id: "proj-3", company_id: "company-1", name: "სავაჭრო ცენტრი გლდანში", address: "ხიზანიშვილის 8, თბილისი", status: "paused", client_id: null, inspector_id: null, created_at: "2024-03-10T10:00:00Z" },
+  { id: "proj-1", company_id: "company-1", name: "საცხოვრებელი კომპლექსი ვაკეში", address: "ჭავჭავაძის 45, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-1", client_emails: ["client@example.ge"], created_at: "2024-01-15T10:00:00Z" },
+  { id: "proj-2", company_id: "company-1", name: "ოფისის მშენებლობა საბურთალოზე", address: "პეკინის 12, თბილისი", status: "active", client_id: "client-1", inspector_id: "inspector-1", client_emails: [], created_at: "2024-02-20T10:00:00Z" },
+  { id: "proj-3", company_id: "company-1", name: "სავაჭრო ცენტრი გლდანში", address: "ხიზანიშვილის 8, თბილისი", status: "paused", client_id: null, inspector_id: null, client_emails: [], created_at: "2024-03-10T10:00:00Z" },
 ];
 
 // Checklist Templates with items
@@ -145,7 +145,7 @@ const demoTemplates: TemplateWithItems[] = [
 ];
 
 // Real Georgian Safety Regulations from matsne.gov.ge
-const demoRegulations: Regulation[] = [
+export const demoRegulations: Regulation[] = [
   // === მუშათა უსაფრთხოება (Worker Safety) ===
   { id: "reg-1", title: "დამსაქმებლის ვალდებულებები — მუხლი 5, ორგანული კანონი", content: "დამსაქმებელი ვალდებულია: უზრუნველყოს უსაფრთხოების ნორმების დაცვა; აღკვეთოს ზიანის მიყენება დასაქმებულისთვის; აკონტროლოს მავნე ფაქტორები; აწარმოოს უბედური შემთხვევებისა და პროფესიული დაავადებების აღრიცხვა; რეგულარულად შეამოწმოს აღჭურვილობა; უზრუნველყოს დამცავი აღჭურვილობა; ჩაატაროს მუშათა ტრენინგი სამუშაო საათებში დამსაქმებლის ხარჯით; აიღოს საუბედურო შემთხვევოთა დაზღვევა. უსაფრთხოებასთან დაკავშირებული ყველა ხარჯი ეკისრება დამსაქმებელს.", category: "worker_safety", source_url: "https://matsne.gov.ge/ka/document/view/4486188", effective_date: "2019-09-01", tags: ["დამსაქმებელი", "ვალდებულება", "ტრენინგი", "დაზღვევა"], created_at: "2024-01-01T00:00:00Z" },
   { id: "reg-2", title: "რისკის შეფასება — მუხლი 6, ორგანული კანონი", content: "დამსაქმებელი ვალდებულია შეაფასოს სამუშაო ადგილის რისკები საერთაშორისო სტანდარტების შესაბამისად. უნდა შეიმუშაოს პრევენციის ყოვლისმომცველი პოლიტიკა, შეინახოს რისკის შეფასების დოკუმენტაცია. კოლექტიური დაცვის ზომებს უპირატესობა ენიჭება ინდივიდუალურ დაცვასთან შედარებით. სამუშაო უნდა მოერგოს ინდივიდუალურ შესაძლებლობებს.", category: "worker_safety", source_url: "https://matsne.gov.ge/ka/document/view/4486188", effective_date: "2019-09-01", tags: ["რისკი", "შეფასება", "პრევენცია", "დოკუმენტაცია"], created_at: "2024-01-01T00:00:00Z" },

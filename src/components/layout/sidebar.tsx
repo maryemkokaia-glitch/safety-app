@@ -5,10 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { useDemo } from "@/lib/demo-context";
 import {
-  Shield, LayoutDashboard, FolderOpen, Users, ClipboardList, BookOpen, History,
+  LayoutDashboard, FolderOpen, ClipboardList, BookOpen, History,
   X, RefreshCw, Settings, ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import { LogoIcon, LogoFull } from "@/components/ui/logo";
 import type { TranslationKey } from "@/lib/i18n";
 
 interface NavItem { labelKey: TranslationKey; href: string; icon: React.ReactNode; }
@@ -27,7 +28,6 @@ export function Sidebar() {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Always use inspector nav on mobile
   const navItems = inspectorNav;
   const bottomNavItems = navItems.slice(0, 5);
 
@@ -37,11 +37,9 @@ export function Sidebar() {
       <div className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 lg:hidden">
         <div className="flex items-center justify-between px-4 h-13">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
+            <LogoIcon size="sm" />
             <div>
-              <span className="text-sm font-bold text-gray-900">SafetyApp</span>
+              <span className="text-sm font-black text-gray-900 tracking-tight">Sar<span className="text-orange-500">ke</span></span>
               <span className="text-[10px] text-gray-400 ml-1.5">{t("role.inspector")}</span>
             </div>
           </div>
@@ -52,7 +50,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Mobile bottom navigation — clean tab bar */}
+      {/* Mobile bottom navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 lg:hidden safe-bottom" role="navigation" aria-label="Main navigation">
         <div className="flex items-center justify-around px-2 py-1.5">
           {bottomNavItems.map((item) => {
@@ -60,24 +58,23 @@ export function Sidebar() {
             return (
               <Link key={item.href} href={item.href}
                 className={cn("flex flex-col items-center gap-1 px-4 py-2 rounded-2xl min-w-[64px] transition-all",
-                  isActive ? "text-blue-600" : "text-gray-400"
+                  isActive ? "text-navy-800" : "text-gray-400"
                 )}>
-                <div className={cn("p-1.5 rounded-xl transition-colors", isActive && "bg-blue-50")}>
+                <div className={cn("p-1.5 rounded-xl transition-colors", isActive && "bg-orange-50")}>
                   {item.icon}
                 </div>
-                <span className={cn("text-[10px] font-semibold", isActive && "text-blue-600")}>{t(item.labelKey)}</span>
+                <span className={cn("text-[10px] font-semibold", isActive && "text-navy-800")}>{t(item.labelKey)}</span>
               </Link>
             );
           })}
         </div>
       </nav>
 
-      {/* Mobile settings drawer — slide from right */}
+      {/* Mobile settings drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <div className="fixed right-0 top-0 bottom-0 w-[300px] bg-white flex flex-col shadow-2xl rounded-l-3xl">
-            {/* Drawer header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-4">
               <h2 className="text-lg font-bold text-gray-900">{t("settings")}</h2>
               <button onClick={() => setMobileOpen(false)} aria-label="Close"
@@ -88,13 +85,13 @@ export function Sidebar() {
 
             {/* User card */}
             <div className="px-5 pb-4">
-              <div className="flex items-center gap-3 bg-blue-50 rounded-2xl p-4">
-                <div className="w-11 h-11 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0">
+              <div className="flex items-center gap-3 bg-orange-50 rounded-2xl p-4">
+                <div className="w-11 h-11 bg-navy-800 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0">
                   {user.full_name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">{user.full_name}</p>
-                  <p className="text-xs text-blue-600 font-medium">{t("role.inspector")}</p>
+                  <p className="text-xs text-navy-800 font-medium">{t("role.inspector")}</p>
                 </div>
               </div>
             </div>
@@ -105,16 +102,15 @@ export function Sidebar() {
               <div className="flex gap-2">
                 <button onClick={() => setLang("ka")}
                   className={cn("flex-1 py-3 text-sm font-semibold rounded-xl transition-all",
-                    lang === "ka" ? "bg-blue-600 text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  )}>🇬🇪 ქართული</button>
+                    lang === "ka" ? "bg-navy-800 text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  )}>ქართული</button>
                 <button onClick={() => setLang("en")}
                   className={cn("flex-1 py-3 text-sm font-semibold rounded-xl transition-all",
-                    lang === "en" ? "bg-blue-600 text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  )}>🇬🇧 English</button>
+                    lang === "en" ? "bg-navy-800 text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  )}>English</button>
               </div>
             </div>
 
-            {/* Spacer */}
             <div className="flex-1" />
 
             {/* Reset */}
@@ -130,16 +126,11 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* Desktop sidebar — hidden on mobile */}
+      {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200">
         <div className="flex items-center gap-2.5 px-5 py-5 border-b border-gray-200">
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-base font-bold text-gray-900 block leading-tight">SafetyApp</span>
-            <span className="text-[10px] text-gray-400">{t("role.inspector")}</span>
-          </div>
+          <LogoFull size="sm" />
+          <span className="text-[10px] text-gray-400 ml-auto">{t("role.inspector")}</span>
         </div>
         <nav className="flex-1 px-3 py-3 overflow-y-auto" aria-label="Desktop navigation">
           <div className="space-y-0.5">
@@ -148,7 +139,7 @@ export function Sidebar() {
               return (
                 <Link key={item.href} href={item.href}
                   className={cn("flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all",
-                    isActive ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-100"
+                    isActive ? "bg-orange-50 text-navy-800 font-semibold" : "text-gray-600 hover:bg-gray-100"
                   )}>
                   {item.icon}
                   {t(item.labelKey)}
@@ -157,7 +148,6 @@ export function Sidebar() {
             })}
           </div>
 
-          {/* Project shortcuts */}
           {activeProjects.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-100">
               <p className="text-[10px] uppercase text-gray-400 font-bold mb-2 px-3 tracking-wider">{t("dashboard.my_projects")}</p>
@@ -167,7 +157,7 @@ export function Sidebar() {
                   return (
                     <Link key={project.id} href={`/inspector/project/${project.id}`}
                       className={cn("flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all",
-                        isActive ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-500 hover:bg-gray-100"
+                        isActive ? "bg-orange-50 text-navy-800 font-semibold" : "text-gray-500 hover:bg-gray-100"
                       )}>
                       <FolderOpen className="w-4 h-4 shrink-0" />
                       <span className="truncate">{project.name}</span>
@@ -180,7 +170,7 @@ export function Sidebar() {
         </nav>
         <div className="px-4 py-4 border-t border-gray-200">
           <div className="flex items-center gap-3 px-2 mb-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600 shrink-0">
+            <div className="w-8 h-8 bg-navy-800/10 rounded-full flex items-center justify-center text-xs font-bold text-navy-800 shrink-0">
               {user.full_name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Shield, Eye, EyeOff, AlertCircle, Loader2, Mail } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Loader2, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LogoFull } from "@/components/ui/logo";
 import { createClient } from "@/lib/supabase/client";
 import { t, type Lang, type TranslationKey } from "@/lib/i18n";
 
@@ -110,7 +111,7 @@ export default function RegisterPage() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-5">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 max-w-sm w-full text-center">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-5">
-            <Mail className="w-8 h-8 text-blue-600" />
+            <Mail className="w-8 h-8 text-navy-800" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">{tr("auth.check_email")}</h2>
           <p className="text-sm text-gray-500 mb-2">{tr("auth.confirm_sent")}</p>
@@ -157,12 +158,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Branding */}
       <div className="flex items-center justify-center px-5 pt-12 pb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-bold text-gray-900">{tr("app.name")}</span>
-        </div>
+        <LogoFull size="md" />
       </div>
 
       {/* Form */}
@@ -263,7 +259,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-500 mt-5">
           {tr("auth.have_account")}{" "}
-          <Link href="/login" className="text-blue-600 font-semibold hover:underline">
+          <Link href="/login" className="text-navy-800 font-semibold hover:underline">
             {tr("auth.login")}
           </Link>
         </p>

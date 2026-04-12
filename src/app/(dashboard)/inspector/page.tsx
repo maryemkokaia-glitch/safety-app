@@ -15,6 +15,7 @@ export default function InspectorDashboard() {
   const [showAddProject, setShowAddProject] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
+  const [newClientEmails, setNewClientEmails] = useState("");
 
   const myInspections = data.inspections.filter((i) => i.inspector_id === user.id);
   const inProgress = myInspections.filter((i) => i.status === "in_progress");
@@ -38,15 +39,18 @@ export default function InspectorDashboard() {
   function addProject() {
     if (!newName.trim()) return;
     const projectId = generateId();
+    const emails = newClientEmails.split(/[,;\s]+/).map((e) => e.trim()).filter((e) => e.includes("@"));
     updateData((d) => ({
       ...d,
       projects: [...d.projects, {
         id: projectId, company_id: "company-1", name: newName.trim(),
         address: newAddress.trim() || null, status: "active",
-        client_id: null, inspector_id: user.id, created_at: new Date().toISOString(),
+        client_id: null, inspector_id: user.id,
+        client_emails: emails,
+        created_at: new Date().toISOString(),
       }],
     }));
-    setNewName(""); setNewAddress(""); setShowAddProject(false);
+    setNewName(""); setNewAddress(""); setNewClientEmails(""); setShowAddProject(false);
     router.push(`/inspector/project/${projectId}`);
   }
 
@@ -199,6 +203,9 @@ export default function InspectorDashboard() {
         <div className="space-y-3">
           <Input id="projectName" label={t("project.name")} placeholder="მაგ: საცხოვრებელი კომპლექსი" value={newName} onChange={(e) => setNewName(e.target.value)} autoFocus />
           <Input id="projectAddress" label={t("project.address")} placeholder="მაგ: ჭავჭავაძის 45, თბილისი" value={newAddress} onChange={(e) => setNewAddress(e.target.value)} />
+          <div>
+            <Input id="clientEmails" label={`${t("project.client_emails")} (${t("project.client_emails_hint")})`} placeholder={t("project.client_emails_placeholder")} value={newClientEmails} onChange={(e) => setNewClientEmails(e.target.value)} />
+          </div>
           <div className="flex gap-3 pt-1">
             <button onClick={() => setShowAddProject(false)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 min-h-[48px]">{t("cancel")}</button>
             <button onClick={addProject} disabled={!newName.trim()} className="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 min-h-[48px]">{t("create")}</button>

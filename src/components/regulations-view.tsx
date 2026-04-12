@@ -198,11 +198,17 @@ function RegulationCard({ reg, t, onOpen }: { reg: Regulation; t: (key: Translat
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 text-sm leading-snug">{reg.title}</h3>
             <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">{preview}</p>
-            <div className="flex items-center gap-2 mt-2.5">
+            <div className="flex items-center gap-3 mt-2.5">
               <button onClick={onOpen}
                 className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 active:scale-95 transition-all min-h-[32px]">
                 სრულად <ArrowRight className="w-3 h-3" />
               </button>
+              {reg.source_url && (
+                <a href={reg.source_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-blue-600 transition-colors min-h-[32px]">
+                  <ExternalLink className="w-3 h-3" /> matsne.gov.ge
+                </a>
+              )}
             </div>
           </div>
         </div>

@@ -63,10 +63,22 @@ export default function InspectorInspect() {
     updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, items: insp.items.map((item) => item.id === itemId ? { ...item, photos: (item.photos || []).filter((p) => p.id !== photoId) } : item) } : insp) }));
   }
   const [showConfirm, setShowConfirm] = useState(false);
+  const [sendToClient, setSendToClient] = useState(true);
+  const clientEmails = (project as any)?.client_emails as string[] || [];
 
   function submitInspection() {
-    const score = calculateSafetyScore(items);
-    updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, status: "completed", safety_score: score, notes: notes || null, completed_at: new Date().toISOString() } : insp) }));
+    const finalScore = calculateSafetyScore(items);
+    updateData((d) => ({ ...d, inspections: d.inspections.map((insp) => insp.id === id ? { ...insp, status: "completed", safety_score: finalScore, notes: notes || null, completed_at: new Date().toISOString() } : insp) }));
+
+    // Send email to client via mailto
+    if (sendToClient && clientEmails.length > 0) {
+      const subject = encodeURIComponent(`${t("inspection.finish")} — ${project?.name} — ${finalScore}%`);
+      const body = encodeURIComponent(
+        `${project?.name}\n${template?.name}\n\n${t("inspection.score")}: ${finalScore}%\n${t("inspection.violation")}: ${items.filter((i) => i.status === "violation").length}\n${t("inspection.warning")}: ${items.filter((i) => i.status === "warning").length}\n\n${notes || ""}\n\n— Sarke`
+      );
+      window.open(`mailto:${clientEmails.join(",")}?subject=${subject}&body=${body}`, "_blank");
+    }
+
     router.push("/inspector");
   }
   function updatePhotoCaption(itemId: string, photoId: string, caption: string) {
@@ -266,7 +278,30 @@ export default function InspectorInspect() {
               )}>{score}%</span>
             </div>
             <h3 className="text-lg font-bold text-gray-900 text-center mb-1">{t("inspection.confirm_submit")}</h3>
-            <p className="text-sm text-gray-500 text-center mb-5">{t("inspection.confirm_submit_desc")}</p>
+            <p className="text-sm text-gray-500 text-center mb-4">{t("inspection.confirm_submit_desc")}</p>
+
+            {/* Send to client toggle */}
+            {clientEmails.length > 0 && (
+              <button
+                onClick={() => setSendToClient(!sendToClient)}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3.5 rounded-xl mb-4 transition-colors text-left",
+                  sendToClient ? "bg-blue-50 border border-blue-200" : "bg-gray-50 border border-gray-200"
+                )}
+              >
+                <div className={cn(
+                  "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
+                  sendToClient ? "bg-blue-600 border-blue-600" : "border-gray-300"
+                )}>
+                  {sendToClient && <span className="text-white text-xs font-bold">✓</span>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">{t("inspection.send_to_client")}</p>
+                  <p className="text-xs text-gray-500 truncate">{clientEmails.join(", ")}</p>
+                </div>
+              </button>
+            )}
+
             <div className="flex gap-3">
               <button onClick={() => setShowConfirm(false)}
                 className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 min-h-[48px]">

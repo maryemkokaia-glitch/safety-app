@@ -114,32 +114,31 @@ export default function InspectorInspect() {
                 item.status === "safe" ? "border-green-200 bg-green-50/30" :
                 "border-gray-200/80"
               )}>
-              {/* Item header */}
-              <div className="px-4 pt-4 pb-3">
-                <div className="flex items-start gap-2.5 mb-3">
-                  <span className="w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              {/* Question + status buttons — compact */}
+              <div className="px-4 py-3">
+                {/* Question text */}
+                <div className="flex items-start gap-2 mb-2.5">
+                  <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 leading-snug">{item.template_item?.text}</p>
-                    {item.is_critical && <Badge variant="danger" className="mt-1.5">{t("inspection.critical")}</Badge>}
+                    <p className="text-[13px] font-medium text-gray-900 leading-snug">{item.template_item?.text}</p>
+                    {item.is_critical && <span className="text-[10px] text-red-600 font-bold">{t("inspection.critical")}</span>}
                   </div>
                 </div>
 
                 {item.template_item?.input_type === "measurement" ? (
-                  /* Measurement input */
-                  <div className="space-y-2">
+                  /* Measurement — compact row */
+                  <div>
                     <div className="flex items-center gap-2">
                       <div className="relative flex-1">
                         <input
-                          type="number"
-                          step="any"
-                          inputMode="decimal"
+                          type="number" step="any" inputMode="decimal"
                           value={item.measured_value ?? ""}
                           onChange={(e) => updateMeasuredValue(item.id, e.target.value)}
                           placeholder={t("inspection.enter_value")}
                           className={cn(
-                            "w-full rounded-xl border-2 px-4 py-3 text-lg font-bold text-center min-h-[56px] outline-none transition-all",
+                            "w-full rounded-lg border-2 px-3 py-2 text-base font-bold text-center min-h-[44px] outline-none transition-all",
                             item.status === "safe" ? "border-green-300 bg-green-50 text-green-700" :
                             item.status === "warning" ? "border-amber-300 bg-amber-50 text-amber-700" :
                             item.status === "violation" ? "border-red-300 bg-red-50 text-red-700" :
@@ -147,38 +146,33 @@ export default function InspectorInspect() {
                           )}
                         />
                         {item.template_item?.unit && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">
-                            {item.template_item.unit}
-                          </span>
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">{item.template_item.unit}</span>
                         )}
                       </div>
-                    </div>
-                    {/* Norm range + auto status */}
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <Ruler className="w-3 h-3" />
-                        {t("template.norm")}: {formatNormRange(item.template_item?.norm_min, item.template_item?.norm_max, item.template_item?.unit)}
-                      </span>
                       {item.measured_value != null && (
-                        <Badge variant={item.status === "safe" ? "success" : item.status === "warning" ? "warning" : item.status === "violation" ? "danger" : "default"}>
-                          {item.status === "safe" ? t("inspection.safe") : item.status === "warning" ? t("inspection.warning") : item.status === "violation" ? t("inspection.violation") : "—"}
+                        <Badge variant={item.status === "safe" ? "success" : item.status === "warning" ? "warning" : item.status === "violation" ? "danger" : "default"} className="shrink-0 text-[10px]">
+                          {item.status === "safe" ? "✓" : item.status === "warning" ? "⚠" : item.status === "violation" ? "✗" : "—"}
                         </Badge>
                       )}
                     </div>
+                    <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                      <Ruler className="w-2.5 h-2.5" />
+                      {formatNormRange(item.template_item?.norm_min, item.template_item?.norm_max, item.template_item?.unit)}
+                    </p>
                   </div>
                 ) : (
-                  /* Status buttons — 2x2 grid on mobile, 4 cols on larger */
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {statusButtons.map(({ status, icon: Icon, label, bg, ring, activeBg }) => {
+                  /* Status buttons — single row, icon-only on mobile */
+                  <div className="flex gap-1.5">
+                    {statusButtons.map(({ status, icon: Icon, label, activeBg }) => {
                       const isActive = item.status === status;
                       return (
                         <button key={status} onClick={() => updateItemStatus(item.id, status)}
                           className={cn(
-                            "flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-all border-2 min-h-[48px]",
-                            isActive ? `${activeBg} text-gray-900` : "bg-gray-50 border-transparent text-gray-500 active:scale-95"
+                            "flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all border min-h-[36px]",
+                            isActive ? `${activeBg} text-gray-900` : "bg-gray-50 border-transparent text-gray-400 active:scale-95"
                           )}>
-                          <Icon className={cn("w-4 h-4", isActive && (status === "safe" ? "text-green-600" : status === "warning" ? "text-amber-600" : status === "violation" ? "text-red-600" : "text-gray-500"))} />
-                          <span>{label}</span>
+                          <Icon className={cn("w-3.5 h-3.5", isActive && (status === "safe" ? "text-green-600" : status === "warning" ? "text-amber-600" : status === "violation" ? "text-red-600" : "text-gray-500"))} />
+                          <span className="hidden sm:inline">{label}</span>
                         </button>
                       );
                     })}
@@ -186,46 +180,44 @@ export default function InspectorInspect() {
                 )}
               </div>
 
-              {/* Quick actions: comment + photo — always visible */}
-              <div className="flex items-center border-t border-gray-100">
+              {/* Actions row: comment + photo — compact */}
+              <div className="flex items-center border-t border-gray-100 px-2">
                 <button onClick={() => setExpandedItem(isExpanded ? null : item.id)}
-                  className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors min-h-[44px]",
-                    item.comment ? "text-blue-600" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                  className={cn("flex-1 flex items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors min-h-[36px]",
+                    item.comment ? "text-blue-600" : "text-gray-400"
                   )}>
-                  <MessageSquare className="w-4 h-4" />
-                  {t("inspection.comment")}{item.comment ? " ✓" : ""}
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  {item.comment ? "✓" : t("inspection.comment")}
                 </button>
-                <div className="w-px h-6 bg-gray-100" />
-                <label className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium cursor-pointer transition-colors min-h-[44px]",
-                  (item.photos?.length ?? 0) > 0 ? "text-blue-600" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                <div className="w-px h-4 bg-gray-100" />
+                <label className={cn("flex-1 flex items-center justify-center gap-1 py-2 text-[11px] font-medium cursor-pointer transition-colors min-h-[36px]",
+                  (item.photos?.length ?? 0) > 0 ? "text-blue-600" : "text-gray-400"
                 )}>
-                  <Camera className="w-4 h-4" />
-                  {(item.photos?.length ?? 0) > 0 ? `${item.photos!.length} ფოტო` : t("inspection.add_photo")}
+                  <Camera className="w-3.5 h-3.5" />
+                  {(item.photos?.length ?? 0) > 0 ? `${item.photos!.length}` : t("inspection.add_photo")}
                   <input type="file" accept="image/*" capture="environment" className="hidden"
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) addItemPhoto(item.id, f); e.target.value = ""; }} />
                 </label>
               </div>
 
-              {/* Comment area — expands on tap */}
+              {/* Comment expand */}
               {isExpanded && (
-                <div className="px-4 pb-4 border-t border-gray-100 bg-gray-50/50">
-                  <div className="pt-3">
-                    <Textarea placeholder={t("inspection.comment") + "..."} value={item.comment || ""}
-                      onChange={(e) => updateItemComment(item.id, e.target.value)} autoFocus />
-                  </div>
+                <div className="px-3 pb-3 border-t border-gray-100 bg-gray-50/50 pt-2">
+                  <Textarea placeholder={t("inspection.comment") + "..."} value={item.comment || ""}
+                    onChange={(e) => updateItemComment(item.id, e.target.value)} autoFocus rows={2} />
                 </div>
               )}
 
-              {/* Photo thumbnails — always visible if photos exist */}
+              {/* Photo strip */}
               {(item.photos?.length ?? 0) > 0 && (
-                <div className="px-4 pb-3 border-t border-gray-100 pt-2">
-                  <div className="flex gap-2 overflow-x-auto">
+                <div className="px-3 pb-2 border-t border-gray-100 pt-2">
+                  <div className="flex gap-1.5 overflow-x-auto">
                     {item.photos!.map((photo) => (
                       <div key={photo.id} className="relative shrink-0">
-                        <img src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg" loading="lazy" />
+                        <img src={photo.photo_url} alt="" className="w-12 h-12 object-cover rounded-lg" loading="lazy" />
                         <button onClick={() => removeItemPhoto(item.id, photo.id)}
-                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm">
-                          <X className="w-3 h-3" />
+                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm">
+                          <X className="w-2.5 h-2.5" />
                         </button>
                       </div>
                     ))}

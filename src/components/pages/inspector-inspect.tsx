@@ -121,20 +121,21 @@ const InspectionItemRow = memo(function InspectionItemRow({
           </div>
         )}
 
-        {/* Comment + Photo row */}
-        <div className="flex gap-2 mt-2">
+        {/* Comment + Photo — subtle inline actions */}
+        <div className="flex items-center mt-2 -mx-1">
           <button onClick={() => onToggleExpand(item.id)}
-            className={cn("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors",
-              item.comment ? "bg-blue-50 text-blue-700" : "text-gray-400 hover:bg-gray-100"
+            className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] font-medium transition-colors rounded-md",
+              item.comment ? "text-blue-600" : "text-gray-350 hover:text-gray-500"
             )}>
             <MessageSquare className="w-3 h-3" />
-            {item.comment ? "✓" : statusLabels.comment || "comment"}
+            {item.comment ? "✓" : statusLabels.comment}
           </button>
-          <label className={cn("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium cursor-pointer transition-colors",
-            (item.photos?.length ?? 0) > 0 ? "bg-blue-50 text-blue-700" : "text-gray-400 hover:bg-gray-100"
+          <span className="w-px h-3 bg-gray-200" />
+          <label className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] font-medium cursor-pointer transition-colors rounded-md",
+            (item.photos?.length ?? 0) > 0 ? "text-blue-600" : "text-gray-350 hover:text-gray-500"
           )}>
             <Camera className="w-3 h-3" />
-            {(item.photos?.length ?? 0) > 0 ? `${item.photos!.length}` : statusLabels.photo || "photo"}
+            {(item.photos?.length ?? 0) > 0 ? `${item.photos!.length} ფოტო` : statusLabels.photo}
             <input type="file" accept="image/*" capture="environment" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onAddPhoto(item.id, f); e.target.value = ""; }} />
           </label>

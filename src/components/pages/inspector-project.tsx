@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useDemo, generateId } from "@/lib/demo-context";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
@@ -118,8 +119,12 @@ export default function InspectorProject() {
           </div>
           {data.templates.length === 0 ? (
             <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 p-8 text-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">{t("loading")}</p>
+              <ClipboardList className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 mb-3">{t("no_data")}</p>
+              <Link href="/inspector/templates"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700">
+                <Plus className="w-4 h-4" /> {t("template.new")}
+              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">

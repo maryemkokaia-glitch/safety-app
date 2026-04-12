@@ -7,7 +7,7 @@ import { useDemo, generateId } from "@/lib/demo-context";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Plus, ChevronRight, ClipboardList, Play, X, History } from "lucide-react";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+
 
 const categoryIcons: Record<string, string> = {
   scaffold_fixed: "🏗️",
@@ -73,11 +73,6 @@ export default function InspectorProject() {
 
   return (
     <div className="pb-4">
-      {/* Breadcrumb + Header */}
-      <Breadcrumb
-        items={[{ label: t("nav.dashboard"), href: "/inspector" }]}
-        current={project.name}
-      />
       <div className="flex items-start gap-3 mb-5">
         <button onClick={() => router.push("/inspector")} aria-label="Back"
           className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 mt-0.5">

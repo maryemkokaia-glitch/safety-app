@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "./client";
 import { useAuth } from "./auth-context";
 import type { User, UserRole } from "../database.types";
@@ -17,8 +17,7 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
 
   const supabase = createClient();
 
-  // Initialize with empty data immediately — no loading screen
-  const makeEmptyData = (user: any): AppData => ({
+  const makeEmptyData = (user: User): AppData => ({
     lang,
     currentRole: "inspector" as UserRole,
     currentUser: user,
@@ -32,15 +31,11 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
 
   const [data, setData] = useState<AppData | null>(null);
 
-  // Set empty data as soon as user is available, then fetch in background
-  // Use authUser?.id as dep to avoid infinite loop from object reference changes
   const userId = authUser?.id;
   useEffect(() => {
     if (authLoading) return;
     if (!authUser || !userId) return;
-    // Immediately show empty data — no spinner
     setData((prev) => prev || makeEmptyData(authUser));
-    // Then fetch real data in background
     fetchAllData();
   }, [userId, authLoading]);
 
@@ -59,9 +54,18 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
         supabase.from("profiles").select("*"),
       ]);
 
+      const tableNames = ["projects", "templates", "inspections", "regulations", "notifications", "profiles"];
       const getData = (idx: number) => {
         const r = results[idx];
-        return r.status === "fulfilled" ? r.value.data || [] : [];
+        if (r.status === "rejected") {
+          console.error(`Failed to fetch ${tableNames[idx]}:`, r.reason);
+          return [];
+        }
+        if (r.value.error) {
+          console.error(`Error fetching ${tableNames[idx]}:`, r.value.error.message);
+          return [];
+        }
+        return r.value.data || [];
       };
 
       const projects = getData(0);
@@ -71,13 +75,11 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       const notifications = getData(4);
       const users = getData(5);
 
-      // Map templates to include items array properly
       const mappedTemplates = (templates || []).map((t: any) => ({
         ...t,
         items: (t.items || []).sort((a: any, b: any) => a.order_index - b.order_index),
       }));
 
-      // Map inspections to include items with template_item and photos
       const mappedInspections = (inspections || []).map((insp: any) => ({
         ...insp,
         items: (insp.items || []).map((item: any) => ({
@@ -102,7 +104,6 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       setData(appData);
     } catch (err) {
       console.error("Failed to fetch data:", err);
-      // Still set data with empty arrays so app doesn't get stuck
       setData({
         lang,
         currentRole: "inspector",
@@ -126,7 +127,6 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
     setData((prev) => prev ? { ...prev, currentRole: role } : prev);
   }, []);
 
-  // Generic updateData for compatibility — updates local state only
   const updateData = useCallback((updater: (data: AppData) => AppData) => {
     setData((prev) => {
       if (!prev) return prev;
@@ -147,7 +147,6 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
   const createInspection = useCallback(async (projectId: string, templateId: string): Promise<string | null> => {
     if (!authUser) return null;
 
-    // Get template items
     const { data: templateItems } = await supabase
       .from("checklist_template_items")
       .select("*")
@@ -158,7 +157,6 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
 
     const inspId = crypto.randomUUID();
 
-    // Insert inspection
     const { error: inspError } = await supabase.from("inspections").insert({
       id: inspId,
       project_id: projectId,
@@ -173,8 +171,8 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       return null;
     }
 
-    // Insert inspection items
     const items = templateItems.map((ti: any) => ({
+      id: crypto.randomUUID(),
       inspection_id: inspId,
       template_item_id: ti.id,
       status: "not_applicable",
@@ -188,13 +186,40 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       return null;
     }
 
-    // Refresh data to get the new inspection
-    await fetchAllData();
+    // Local optimistic update instead of full refetch
+    setData((prev) => {
+      if (!prev) return prev;
+      const template = prev.templates.find((t) => t.id === templateId);
+      const newInspection = {
+        id: inspId,
+        project_id: projectId,
+        template_id: templateId,
+        inspector_id: authUser.id,
+        status: "in_progress" as const,
+        safety_score: null,
+        notes: null,
+        weather: null,
+        started_at: new Date().toISOString(),
+        completed_at: null,
+        items: items.map((item: any) => {
+          const tmplItem = templateItems.find((ti: any) => ti.id === item.template_item_id);
+          return {
+            ...item,
+            comment: null,
+            measured_value: null,
+            template_item: tmplItem || null,
+            photos: [],
+          };
+        }),
+      };
+      return { ...prev, inspections: [newInspection as any, ...prev.inspections] };
+    });
+
     return inspId;
   }, [authUser]);
 
   const updateInspectionItem = useCallback(async (itemId: string, fields: Record<string, any>) => {
-    // Optimistic local update
+    // Optimistic local update only — no refetch
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -208,20 +233,20 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       };
     });
 
-    // Persist to Supabase
-    const { error } = await supabase
+    // Persist to Supabase in background — don't await
+    supabase
       .from("inspection_items")
       .update(fields)
-      .eq("id", itemId);
-
-    if (error) console.error("Failed to update item:", error);
+      .eq("id", itemId)
+      .then(({ error }) => {
+        if (error) console.error("Failed to update item:", error);
+      });
   }, []);
 
   const uploadPhoto = useCallback(async (itemId: string, file: File) => {
     const photoId = crypto.randomUUID();
     const path = `${authUser?.id}/${itemId}/${photoId}.jpg`;
 
-    // Upload to storage
     const { error: uploadError } = await supabase.storage
       .from("inspection-photos")
       .upload(path, file, { contentType: file.type });
@@ -231,25 +256,21 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       return;
     }
 
-    // Get public URL
     const { data: urlData } = supabase.storage
       .from("inspection-photos")
       .getPublicUrl(path);
 
     const photoUrl = urlData.publicUrl;
 
-    // Insert record
-    const { error: insertError } = await supabase.from("inspection_photos").insert({
+    // Insert record — don't await, update optimistically
+    supabase.from("inspection_photos").insert({
       id: photoId,
       inspection_item_id: itemId,
       photo_url: photoUrl,
       taken_at: new Date().toISOString(),
+    }).then(({ error }) => {
+      if (error) console.error("Failed to save photo record:", error);
     });
-
-    if (insertError) {
-      console.error("Failed to save photo record:", insertError);
-      return;
-    }
 
     // Optimistic local update
     setData((prev) => {
@@ -291,24 +312,12 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
       };
     });
 
-    // Delete from DB
-    await supabase.from("inspection_photos").delete().eq("id", photoId);
+    // Delete in background
+    supabase.from("inspection_photos").delete().eq("id", photoId);
   }, []);
 
   const submitInspection = useCallback(async (inspectionId: string, notes: string, score: number) => {
-    const { error } = await supabase.from("inspections").update({
-      status: "completed",
-      safety_score: score,
-      notes: notes || null,
-      completed_at: new Date().toISOString(),
-    }).eq("id", inspectionId);
-
-    if (error) {
-      console.error("Failed to submit inspection:", error);
-      return;
-    }
-
-    // Update local state
+    // Update local state immediately
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -320,9 +329,37 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
         ),
       };
     });
+
+    // Persist in background
+    supabase.from("inspections").update({
+      status: "completed",
+      safety_score: score,
+      notes: notes || null,
+      completed_at: new Date().toISOString(),
+    }).eq("id", inspectionId).then(({ error }) => {
+      if (error) console.error("Failed to submit inspection:", error);
+    });
   }, []);
 
-  // Still loading auth — brief spinner (usually < 500ms)
+  const t_fn = useCallback((key: TranslationKey) => translate(key, lang), [lang]);
+
+  const contextValue = useMemo(() => {
+    if (!data || !authUser) return null;
+    return {
+      data,
+      user: authUser,
+      role: data.currentRole,
+      lang,
+      setRole,
+      setLang,
+      updateData,
+      refresh,
+      reset,
+      t: t_fn,
+    };
+  }, [data, authUser, lang, t_fn, setRole, setLang, updateData, refresh, reset]);
+
+  // Still loading auth
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -331,34 +368,17 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
     );
   }
 
-  // Not authenticated — redirect
   if (!authUser) {
     if (typeof window !== "undefined") window.location.href = "/login";
     return null;
   }
 
-  // No data yet (shouldn't happen, but safety net)
-  if (!data) {
+  if (!data || !contextValue) {
     return null;
   }
 
-  const t_fn = (key: TranslationKey) => translate(key, lang);
-
   return (
-    <DemoContext.Provider
-      value={{
-        data,
-        user: authUser!,
-        role: data.currentRole,
-        lang,
-        setRole,
-        setLang,
-        updateData,
-        refresh,
-        reset,
-        t: t_fn,
-      }}
-    >
+    <DemoContext.Provider value={contextValue}>
       {children}
     </DemoContext.Provider>
   );

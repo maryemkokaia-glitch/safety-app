@@ -3,7 +3,7 @@
 
 
 import { useState, useRef, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import { useDemo, generateId } from "@/lib/demo-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import Link from "next/link";
 export default function AdminTemplateEditor() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/inspector") ? "/inspector/templates" : "/admin/templates";
   const { data, updateData, t } = useDemo();
   const [newItemText, setNewItemText] = useState("");
   const [newItemType, setNewItemType] = useState<"check" | "measurement">("check");
@@ -85,12 +87,12 @@ export default function AdminTemplateEditor() {
   function duplicateTemplate() {
     const newId = generateId();
     updateData((d) => ({ ...d, templates: [...d.templates, { ...template!, id: newId, name: template!.name + " (ასლი)", items: template!.items.map((i) => ({ ...i, id: generateId(), template_id: newId })), created_at: new Date().toISOString() }] }));
-    router.push(`/admin/templates/${newId}`);
+    router.push(`${basePath}/${newId}`);
   }
 
   function deleteTemplate() {
     updateData((d) => ({ ...d, templates: d.templates.filter((tmpl) => tmpl.id !== id) }));
-    router.push("/admin/templates");
+    router.push(basePath);
   }
 
   // --- Drag & Drop handlers ---
@@ -175,7 +177,7 @@ export default function AdminTemplateEditor() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Link href="/admin/templates" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
+      <Link href={basePath} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
         <ArrowLeft className="w-4 h-4" /> {t("nav.templates")}
       </Link>
 

@@ -6,6 +6,7 @@ import { useDemo, generateId } from "@/lib/demo-context";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Plus, ChevronRight, ClipboardList, Play, X, History } from "lucide-react";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 const categoryIcons: Record<string, string> = {
   scaffold_fixed: "🏗️",
@@ -71,9 +72,13 @@ export default function InspectorProject() {
 
   return (
     <div className="pb-4">
-      {/* Header */}
+      {/* Breadcrumb + Header */}
+      <Breadcrumb
+        items={[{ label: t("nav.dashboard"), href: "/inspector" }]}
+        current={project.name}
+      />
       <div className="flex items-start gap-3 mb-5">
-        <button onClick={() => router.push("/inspector")}
+        <button onClick={() => router.push("/inspector")} aria-label="Back"
           className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 mt-0.5">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
@@ -111,22 +116,29 @@ export default function InspectorProject() {
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {data.templates.map((tmpl) => (
-              <button
-                key={tmpl.id}
-                onClick={() => startInspection(tmpl.id)}
-                className="bg-white rounded-xl border-2 border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 active:bg-blue-50 p-4 text-left transition-all flex items-start gap-3"
-              >
-                <span className="text-2xl mt-0.5">{categoryIcons[tmpl.category] || "📋"}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 leading-snug">{tmpl.name}</p>
-                  <p className="text-xs text-gray-400 mt-1">{tmpl.items.length} {t("template.items")}</p>
-                </div>
-                <Play className="w-4 h-4 text-blue-500 mt-1 shrink-0" />
-              </button>
-            ))}
-          </div>
+          {data.templates.length === 0 ? (
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 p-8 text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2" />
+              <p className="text-xs text-gray-400">{t("loading")}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {data.templates.map((tmpl) => (
+                <button
+                  key={tmpl.id}
+                  onClick={() => startInspection(tmpl.id)}
+                  className="bg-white rounded-xl border-2 border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 active:bg-blue-50 p-4 text-left transition-all flex items-start gap-3"
+                >
+                  <span className="text-2xl mt-0.5">{categoryIcons[tmpl.category] || "📋"}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 leading-snug">{tmpl.name}</p>
+                    <p className="text-xs text-gray-400 mt-1">{tmpl.items.length} {t("template.items")}</p>
+                  </div>
+                  <Play className="w-4 h-4 text-blue-500 mt-1 shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

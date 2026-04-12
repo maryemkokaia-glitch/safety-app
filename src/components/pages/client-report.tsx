@@ -3,7 +3,7 @@
 
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDemo } from "@/lib/demo-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, Loader2, CheckCircle, AlertTriangle, XCircle, MinusCircle, Calendar, User, MapPin, FileText, Ruler } from "lucide-react";
 import { getScoreBgColor, getScoreLabel, getStatusLabel, getStatusColor, formatNormRange } from "@/lib/utils/safety-score";
 import { generatePDF } from "@/lib/utils/pdf";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 function StatusIcon({ status }: { status: string }) {
   const cls = "w-5 h-5";
@@ -24,6 +25,7 @@ function StatusIcon({ status }: { status: string }) {
 
 export default function ClientReport() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { data, t, lang } = useDemo();
   const [generating, setGenerating] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -76,9 +78,16 @@ export default function ClientReport() {
 
   return (
     <div className="max-w-xl mx-auto">
-      {/* Header */}
+      {/* Breadcrumb + Header */}
+      <Breadcrumb
+        items={[
+          { label: t("nav.dashboard"), href: "/inspector" },
+          { label: t("nav.history"), href: "/inspector/history" },
+        ]}
+        current={template?.name ?? "..."}
+      />
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => window.history.back()}
+        <button onClick={() => router.back()} aria-label="Back"
           className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
@@ -175,7 +184,7 @@ export default function ClientReport() {
                   {(item.photos?.length ?? 0) > 0 && (
                     <div className="flex gap-2 flex-wrap mt-2">
                       {item.photos!.map((photo) => (
-                        <img key={photo.id} src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg border border-gray-200" />
+                        <img key={photo.id} src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg border border-gray-200" loading="lazy" />
                       ))}
                     </div>
                   )}
@@ -210,7 +219,7 @@ export default function ClientReport() {
                 {(item.photos?.length ?? 0) > 0 && (
                   <div className="flex gap-1.5 flex-wrap mt-1.5">
                     {item.photos!.map((photo) => (
-                      <img key={photo.id} src={photo.photo_url} alt="" className="w-12 h-12 object-cover rounded border border-gray-200" />
+                      <img key={photo.id} src={photo.photo_url} alt="" className="w-12 h-12 object-cover rounded border border-gray-200" loading="lazy" />
                     ))}
                   </div>
                 )}

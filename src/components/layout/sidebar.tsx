@@ -8,13 +8,14 @@ import {
   Shield, LayoutDashboard, FolderOpen, Users, ClipboardList, BookOpen, History,
   X, RefreshCw, Settings, ChevronRight,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { TranslationKey } from "@/lib/i18n";
 
 interface NavItem { labelKey: TranslationKey; href: string; icon: React.ReactNode; }
 
 const inspectorNav: NavItem[] = [
   { labelKey: "nav.dashboard", href: "/inspector", icon: <LayoutDashboard className="w-5 h-5" /> },
+  { labelKey: "nav.templates", href: "/inspector/templates", icon: <ClipboardList className="w-5 h-5" /> },
   { labelKey: "nav.history", href: "/inspector/history", icon: <History className="w-5 h-5" /> },
   { labelKey: "nav.regulations", href: "/inspector/regulations", icon: <BookOpen className="w-5 h-5" /> },
 ];
@@ -28,13 +29,6 @@ export function Sidebar() {
   // Always use inspector nav on mobile
   const navItems = inspectorNav;
   const bottomNavItems = navItems.slice(0, 5);
-
-  // Force inspector role on mount if not already
-  useEffect(() => {
-    if (role !== "inspector") {
-      setRole("inspector");
-    }
-  }, [role, setRole]);
 
   return (
     <>
@@ -50,7 +44,7 @@ export function Sidebar() {
               <span className="text-[10px] text-gray-400 ml-1.5">{t("role.inspector")}</span>
             </div>
           </div>
-          <button onClick={() => setMobileOpen(true)}
+          <button onClick={() => setMobileOpen(true)} aria-label={t("settings")}
             className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center">
             <Settings className="w-5 h-5 text-gray-500" />
           </button>
@@ -58,7 +52,7 @@ export function Sidebar() {
       </div>
 
       {/* Mobile bottom navigation — clean tab bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 lg:hidden safe-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 lg:hidden safe-bottom" role="navigation" aria-label="Main navigation">
         <div className="flex items-center justify-around px-2 py-1.5">
           {bottomNavItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/inspector" && pathname.startsWith(item.href));
@@ -75,7 +69,7 @@ export function Sidebar() {
             );
           })}
         </div>
-      </div>
+      </nav>
 
       {/* Mobile settings drawer — slide from right */}
       {mobileOpen && (
@@ -85,7 +79,7 @@ export function Sidebar() {
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-4">
               <h2 className="text-lg font-bold text-gray-900">{t("settings")}</h2>
-              <button onClick={() => setMobileOpen(false)}
+              <button onClick={() => setMobileOpen(false)} aria-label="Close"
                 className="p-2 rounded-xl hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center -mr-2">
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -146,7 +140,7 @@ export function Sidebar() {
             <span className="text-[10px] text-gray-400">{t("role.inspector")}</span>
           </div>
         </div>
-        <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto" aria-label="Desktop navigation">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/inspector" && pathname.startsWith(item.href));
             return (

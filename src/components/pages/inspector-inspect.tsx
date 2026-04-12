@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, AlertTriangle, XCircle, MinusCircle, Send, ArrowLeft, MessageSquare, ChevronDown, Camera, X, Image, Ruler } from "lucide-react";
 import { calculateSafetyScore, getScoreBgColor, getScoreLabel, getStatusFromMeasurement, formatNormRange } from "@/lib/utils/safety-score";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { ChecklistItemStatus } from "@/lib/database.types";
 
 export default function InspectorInspect() {
@@ -80,9 +81,16 @@ export default function InspectorInspect() {
 
   return (
     <div className="max-w-xl mx-auto -mt-2">
-      {/* Header */}
+      {/* Breadcrumb + Header */}
+      <Breadcrumb
+        items={[
+          { label: t("nav.dashboard"), href: "/inspector" },
+          { label: project?.name ?? "...", href: `/inspector/project/${inspection.project_id}` },
+        ]}
+        current={template?.name ?? "..."}
+      />
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => router.back()}
+        <button onClick={() => router.back()} aria-label="Back"
           className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
@@ -191,6 +199,8 @@ export default function InspectorInspect() {
 
               {/* Comment & photo toggle */}
               <button onClick={() => setExpandedItem(isExpanded ? null : item.id)}
+                aria-label={isExpanded ? "Collapse" : "Expand"}
+                aria-expanded={isExpanded}
                 className="w-full flex items-center justify-center gap-1 py-2.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 border-t border-gray-100">
                 <MessageSquare className="w-3.5 h-3.5" />
                 {t("inspection.comment")}{item.comment ? " *" : ""}
@@ -225,7 +235,7 @@ export default function InspectorInspect() {
                         {item.photos!.map((photo) => (
                           <div key={photo.id} className="flex items-start gap-2 bg-white rounded-xl border border-gray-200 p-2">
                             <div className="relative shrink-0">
-                              <img src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg" />
+                              <img src={photo.photo_url} alt="" className="w-16 h-16 object-cover rounded-lg" loading="lazy" />
                               <button onClick={() => removeItemPhoto(item.id, photo.id)}
                                 className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm">
                                 <X className="w-3 h-3" />

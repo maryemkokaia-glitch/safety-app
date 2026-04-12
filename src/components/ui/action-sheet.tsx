@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { X, Check } from "lucide-react";
 
 export interface ActionSheetOption {
@@ -20,11 +20,25 @@ interface ActionSheetProps {
 }
 
 export function ActionSheet({ open, onClose, title, options, value, onChange }: ActionSheetProps) {
+  const scrollY = useRef(0);
+
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
+    if (open) {
+      scrollY.current = window.scrollY;
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollY.current);
+    }
     return () => { document.body.style.overflow = ""; };
   }, [open]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose]
+  );
 
   if (!open) return null;
 
@@ -34,7 +48,7 @@ export function ActionSheet({ open, onClose, title, options, value, onChange }: 
   }
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title} onKeyDown={handleKeyDown}>
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl max-h-[75vh] flex flex-col safe-bottom animate-in slide-in-from-bottom">
         {/* Handle bar */}
@@ -45,7 +59,7 @@ export function ActionSheet({ open, onClose, title, options, value, onChange }: 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
           <h3 className="text-base font-bold text-gray-900">{title}</h3>
-          <button onClick={onClose}
+          <button onClick={onClose} aria-label="Close"
             className="p-2 rounded-xl hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center -mr-2">
             <X className="w-5 h-5 text-gray-500" />
           </button>

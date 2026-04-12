@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { Noto_Sans_Georgian } from "next/font/google";
 import "./globals.css";
+
+const notoGeorgian = Noto_Sans_Georgian({
+  subsets: ["georgian", "latin"],
+  weight: ["400", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "SafetyApp - სამშენებლო უსაფრთხოება",
@@ -29,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ka" className="h-full antialiased">
+    <html lang="ka" className={`h-full antialiased ${notoGeorgian.className}`}>
       <body className="min-h-full flex flex-col bg-gray-50 text-gray-900">{children}</body>
     </html>
   );

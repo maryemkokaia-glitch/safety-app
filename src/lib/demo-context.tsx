@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { AppData, loadData, saveData, switchRole, resetData, generateId } from "./store";
 import type { User, UserRole } from "./database.types";
 import { t, type Lang, type TranslationKey } from "./i18n";
@@ -65,7 +65,17 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
     setData(resetData());
   }, []);
 
-  if (!data) {
+  const translate = useCallback((key: TranslationKey) => t(key, data?.lang ?? "ka"), [data?.lang]);
+
+  const contextValue = useMemo(() => {
+    if (!data) return null;
+    return {
+      data, user: data.currentUser, role: data.currentRole, lang: data.lang,
+      setRole, setLang, updateData, refresh, reset, t: translate,
+    };
+  }, [data, translate, setRole, setLang, updateData, refresh, reset]);
+
+  if (!data || !contextValue) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -73,10 +83,8 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const translate = (key: TranslationKey) => t(key, data.lang);
-
   return (
-    <DemoContext.Provider value={{ data, user: data.currentUser, role: data.currentRole, lang: data.lang, setRole, setLang, updateData, refresh, reset, t: translate }}>
+    <DemoContext.Provider value={contextValue}>
       {children}
     </DemoContext.Provider>
   );

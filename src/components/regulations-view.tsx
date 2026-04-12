@@ -33,7 +33,6 @@ export function RegulationsView() {
   const { data, t } = useDemo();
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<"all" | RegulationCategory>("all");
-  const [selectedReg, setSelectedReg] = useState<Regulation | null>(null);
 
   const filtered = data.regulations.filter((r) => {
     const matchesSearch = !search || r.title.toLowerCase().includes(search.toLowerCase()) || r.content.toLowerCase().includes(search.toLowerCase());
@@ -84,7 +83,7 @@ export function RegulationsView() {
             </h2>
             <div className="space-y-2">
               {regs.map((reg) => (
-                <RegulationCard key={reg.id} reg={reg} t={t} onOpen={() => setSelectedReg(reg)} />
+                <RegulationCard key={reg.id} reg={reg} t={t}  />
               ))}
             </div>
           </div>
@@ -93,7 +92,7 @@ export function RegulationsView() {
         // Show flat list for filtered category
         <div className="space-y-2">
           {filtered.map((reg) => (
-            <RegulationCard key={reg.id} reg={reg} t={t} onOpen={() => setSelectedReg(reg)} />
+            <RegulationCard key={reg.id} reg={reg} t={t}  />
           ))}
         </div>
       )}
@@ -105,86 +104,11 @@ export function RegulationsView() {
         </div>
       )}
 
-      {/* Full-page regulation popup */}
-      {selectedReg && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
-          {/* Header */}
-          <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-10">
-            <div className="flex items-center gap-3 px-4 py-3 max-w-2xl mx-auto">
-              <button onClick={() => setSelectedReg(null)}
-                className="p-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2">
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
-              <div className="flex-1 min-w-0">
-                <Badge variant={catVariants[selectedReg.category]} className="mb-0.5">
-                  {t(catLabels[selectedReg.category])}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="px-5 py-6 max-w-2xl mx-auto">
-            <div className="flex items-start gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-                <Scale className="w-5 h-5 text-blue-600" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 leading-snug">{selectedReg.title}</h1>
-            </div>
-
-            {/* Meta info */}
-            {(selectedReg.effective_date || selectedReg.source_url) && (
-              <div className="flex flex-wrap gap-3 mb-6">
-                {selectedReg.effective_date && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">
-                    {new Date(selectedReg.effective_date).toLocaleDateString("ka-GE")}
-                  </span>
-                )}
-                {selectedReg.source_url && (
-                  <a href={selectedReg.source_url} target="_blank" rel="noopener noreferrer"
-                    className="text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-blue-100">
-                    <ExternalLink className="w-3 h-3" /> matsne.gov.ge
-                  </a>
-                )}
-              </div>
-            )}
-
-            {/* Full text */}
-            <div className="prose prose-sm max-w-none">
-              <p className="text-[15px] text-gray-800 leading-relaxed whitespace-pre-line">
-                {selectedReg.content}
-              </p>
-            </div>
-
-            {/* Tags */}
-            {selectedReg.tags.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-gray-100">
-                <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-2">Tags</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedReg.tags.map((tag) => (
-                    <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg">{tag}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Source link at bottom */}
-            {selectedReg.source_url && (
-              <div className="mt-8">
-                <a href={selectedReg.source_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-blue-50 text-blue-700 text-sm font-semibold hover:bg-blue-100 transition-colors min-h-[48px]">
-                  <ExternalLink className="w-4 h-4" /> matsne.gov.ge — სრული ტექსტი
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-function RegulationCard({ reg, t, onOpen }: { reg: Regulation; t: (key: TranslationKey) => string; onOpen: () => void }) {
+function RegulationCard({ reg, t }: { reg: Regulation; t: (key: TranslationKey) => string }) {
   // Show first ~120 chars of content as preview
   const preview = reg.content.length > 120 ? reg.content.substring(0, 120) + "..." : reg.content;
 
@@ -198,18 +122,14 @@ function RegulationCard({ reg, t, onOpen }: { reg: Regulation; t: (key: Translat
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 text-sm leading-snug">{reg.title}</h3>
             <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">{preview}</p>
-            <div className="flex items-center gap-3 mt-2.5">
-              <button onClick={onOpen}
-                className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 active:scale-95 transition-all min-h-[32px]">
-                სრულად <ArrowRight className="w-3 h-3" />
-              </button>
-              {reg.source_url && (
+            {reg.source_url && (
+              <div className="mt-2.5">
                 <a href={reg.source_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-blue-600 transition-colors min-h-[32px]">
+                  className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors min-h-[32px]">
                   <ExternalLink className="w-3 h-3" /> matsne.gov.ge
                 </a>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

@@ -4,7 +4,9 @@ export type ProjectStatus = "active" | "completed" | "paused";
 
 export type InspectionStatus = "in_progress" | "completed";
 
-export type ChecklistItemStatus = "safe" | "warning" | "violation" | "not_applicable";
+export type ChecklistItemStatus = "safe" | "violation" | "not_applicable";
+
+export type ChecklistItemSection = "questionnaire" | "components";
 
 export type ChecklistCategory =
   | "scaffold_fixed"
@@ -70,6 +72,8 @@ export interface ChecklistTemplateItem {
   id: string;
   template_id: string;
   text: string;
+  text_en?: string | null;
+  section?: ChecklistItemSection;
   order_index: number;
   is_critical: boolean;
   input_type?: ChecklistInputType;
@@ -86,6 +90,7 @@ export interface Inspection {
   status: InspectionStatus;
   safety_score: number | null;
   notes: string | null;
+  detailed_description?: string | null;
   weather: string | null;
   started_at: string;
   completed_at: string | null;

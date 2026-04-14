@@ -1,4 +1,4 @@
-import { InspectionItem, ChecklistItemStatus, ChecklistTemplateItem } from "../database.types";
+import { InspectionItem, ChecklistItemStatus } from "../database.types";
 
 export function calculateSafetyScore(items: InspectionItem[]): number {
   const applicable = items.filter((i) => i.status !== "not_applicable");
@@ -7,13 +7,10 @@ export function calculateSafetyScore(items: InspectionItem[]): number {
   const safeCount = applicable.filter((i) => i.status === "safe").length;
   let score = (safeCount / applicable.length) * 100;
 
-  // Penalties
+  // Extra penalty for critical violations
   for (const item of applicable) {
     if (item.status === "violation" && item.is_critical) {
       score -= 10;
-    }
-    if (item.status === "warning") {
-      score -= 2;
     }
   }
 
@@ -43,9 +40,8 @@ export function getScoreLabel(score: number): string {
 
 export function getStatusLabel(status: ChecklistItemStatus): string {
   switch (status) {
-    case "safe": return "უსაფრთხო";
-    case "warning": return "გაფრთხილება";
-    case "violation": return "დარღვევა";
+    case "safe": return "ვარგისია";
+    case "violation": return "დაზიანებულია";
     case "not_applicable": return "არ ეხება";
     default: return status;
   }
@@ -54,7 +50,6 @@ export function getStatusLabel(status: ChecklistItemStatus): string {
 export function getStatusColor(status: ChecklistItemStatus): string {
   switch (status) {
     case "safe": return "bg-green-100 text-green-800";
-    case "warning": return "bg-yellow-100 text-yellow-800";
     case "violation": return "bg-red-100 text-red-800";
     case "not_applicable": return "bg-gray-100 text-gray-600";
     default: return "bg-gray-100 text-gray-600";
@@ -64,8 +59,7 @@ export function getStatusColor(status: ChecklistItemStatus): string {
 /**
  * Auto-determine status from a measured value compared against norm range.
  * - Within range → safe
- * - Within 10% outside range → warning
- * - More than 10% outside → violation
+ * - Outside range → violation
  * - No value → not_applicable
  */
 export function getStatusFromMeasurement(
@@ -78,22 +72,8 @@ export function getStatusFromMeasurement(
   const min = normMin ?? -Infinity;
   const max = normMax ?? Infinity;
 
-  // Within range
   if (value >= min && value <= max) return "safe";
-
-  // Calculate how far outside the range
-  const range = (max === Infinity || min === -Infinity)
-    ? Math.abs(max === Infinity ? min : max) * 0.1 || 1
-    : (max - min) * 0.1 || 1;
-
-  if (value < min) {
-    return (min - value) <= range ? "warning" : "violation";
-  }
-  if (value > max) {
-    return (value - max) <= range ? "warning" : "violation";
-  }
-
-  return "safe";
+  return "violation";
 }
 
 /**

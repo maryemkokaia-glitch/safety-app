@@ -1,18 +1,17 @@
 "use client";
 
-
-
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { useDemo, generateId } from "@/lib/demo-context";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowLeft, AlertTriangle, Shield, Plus, Trash2, Copy, Pencil, X, Check, GripVertical, Ruler, ClipboardCheck, ChevronDown } from "lucide-react";
-import { ActionSheet, type ActionSheetOption } from "@/components/ui/action-sheet";
-import type { TemplateWithItems } from "@/lib/database.types";
-import type { ChecklistTemplateItem } from "@/lib/database.types";
+import { ActionSheet } from "@/components/ui/action-sheet";
+import { useDragSort } from "@/lib/hooks/use-drag-sort";
+import { measurementUnits } from "@/lib/constants/measurement-units";
+import type { TemplateWithItems, ChecklistTemplateItem } from "@/lib/database.types";
 import Link from "next/link";
 
 export default function AdminTemplateEditor() {
@@ -22,6 +21,8 @@ export default function AdminTemplateEditor() {
   const basePath = pathname.startsWith("/inspector") ? "/inspector/templates" : "/admin/templates";
   const { data, updateData, t } = useDemo();
   const [newItemText, setNewItemText] = useState("");
+  const [newItemTextEn, setNewItemTextEn] = useState("");
+  const [newItemSection, setNewItemSection] = useState<"questionnaire" | "components">("components");
   const [newItemType, setNewItemType] = useState<"check" | "measurement">("check");
   const [newItemUnit, setNewItemUnit] = useState("");
   const [newItemMin, setNewItemMin] = useState("");
@@ -33,12 +34,6 @@ export default function AdminTemplateEditor() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showUnitPicker, setShowUnitPicker] = useState(false);
 
-  // Drag state
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
-  const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null);
-  const dragCounter = useRef(0);
-
   const template = data.templates.find((t) => t.id === id);
   if (!template) return <div className="text-center py-12 text-gray-500">{t("no_data")}</div>;
 
@@ -48,11 +43,27 @@ export default function AdminTemplateEditor() {
     updateData((d) => ({ ...d, templates: d.templates.map((tmpl) => tmpl.id === id ? updater(tmpl) : tmpl) }));
   }
 
+  const { draggedId, dropTargetId, dropPosition, handlers: dragHandlers } = useDragSort((draggedId, targetId, position) => {
+    updateTemplate((tmpl) => {
+      const sorted = [...tmpl.items].sort((a, b) => a.order_index - b.order_index);
+      const dragIdx = sorted.findIndex((i: ChecklistTemplateItem) => i.id === draggedId);
+      if (dragIdx === -1) return tmpl;
+      const [dragged] = sorted.splice(dragIdx, 1);
+      const newTargetIdx = sorted.findIndex((i: ChecklistTemplateItem) => i.id === targetId);
+      if (newTargetIdx === -1) return tmpl;
+      const insertIdx = position === "above" ? newTargetIdx : newTargetIdx + 1;
+      sorted.splice(insertIdx, 0, dragged);
+      return { ...tmpl, items: sorted.map((i, idx) => ({ ...i, order_index: idx + 1 })) };
+    });
+  });
+
   function addItem(e: React.FormEvent) {
     e.preventDefault();
     if (!newItemText.trim()) return;
     updateTemplate((tmpl) => ({ ...tmpl, items: [...tmpl.items, {
       id: generateId(), template_id: id, text: newItemText.trim(),
+      text_en: newItemTextEn.trim() || null,
+      section: newItemSection,
       order_index: tmpl.items.length + 1, is_critical: false,
       input_type: newItemType,
       ...(newItemType === "measurement" ? {
@@ -61,7 +72,7 @@ export default function AdminTemplateEditor() {
         norm_max: newItemMax ? parseFloat(newItemMax) : null,
       } : {}),
     }] }));
-    setNewItemText(""); setNewItemType("check"); setNewItemUnit(""); setNewItemMin(""); setNewItemMax("");
+    setNewItemText(""); setNewItemTextEn(""); setNewItemSection("components"); setNewItemType("check"); setNewItemUnit(""); setNewItemMin(""); setNewItemMax("");
   }
 
   function deleteItem(itemId: string) {
@@ -93,86 +104,6 @@ export default function AdminTemplateEditor() {
   function deleteTemplate() {
     updateData((d) => ({ ...d, templates: d.templates.filter((tmpl) => tmpl.id !== id) }));
     router.push(basePath);
-  }
-
-  // --- Drag & Drop handlers ---
-  function handleDragStart(e: React.DragEvent, itemId: string) {
-    setDraggedId(itemId);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", itemId);
-    // Make the drag image slightly transparent
-    if (e.currentTarget instanceof HTMLElement) {
-      requestAnimationFrame(() => {
-        (e.target as HTMLElement).style.opacity = "0.4";
-      });
-    }
-  }
-
-  function handleDragEnd(e: React.DragEvent) {
-    if (e.currentTarget instanceof HTMLElement) {
-      e.currentTarget.style.opacity = "1";
-    }
-    setDraggedId(null);
-    setDropTargetId(null);
-    setDropPosition(null);
-    dragCounter.current = 0;
-  }
-
-  function handleDragEnter(e: React.DragEvent, itemId: string) {
-    e.preventDefault();
-    dragCounter.current++;
-    if (itemId !== draggedId) {
-      setDropTargetId(itemId);
-    }
-  }
-
-  function handleDragLeave(e: React.DragEvent) {
-    dragCounter.current--;
-    if (dragCounter.current === 0) {
-      setDropTargetId(null);
-      setDropPosition(null);
-    }
-  }
-
-  function handleDragOver(e: React.DragEvent, itemId: string) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (itemId === draggedId) return;
-
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    setDropPosition(e.clientY < midY ? "above" : "below");
-    setDropTargetId(itemId);
-  }
-
-  function handleDrop(e: React.DragEvent, targetItemId: string) {
-    e.preventDefault();
-    dragCounter.current = 0;
-
-    if (!draggedId || draggedId === targetItemId) {
-      setDraggedId(null);
-      setDropTargetId(null);
-      setDropPosition(null);
-      return;
-    }
-
-    updateTemplate((tmpl) => {
-      const sorted = [...tmpl.items].sort((a, b) => a.order_index - b.order_index);
-      const dragIdx = sorted.findIndex((i: ChecklistTemplateItem) => i.id === draggedId);
-      const targetIdx = sorted.findIndex((i: ChecklistTemplateItem) => i.id === targetItemId);
-      if (dragIdx === -1 || targetIdx === -1) return tmpl;
-
-      const [dragged] = sorted.splice(dragIdx, 1);
-      const newTargetIdx = sorted.findIndex((i: ChecklistTemplateItem) => i.id === targetItemId);
-      const insertIdx = dropPosition === "above" ? newTargetIdx : newTargetIdx + 1;
-      sorted.splice(insertIdx, 0, dragged);
-
-      return { ...tmpl, items: sorted.map((i, idx) => ({ ...i, order_index: idx + 1 })) };
-    });
-
-    setDraggedId(null);
-    setDropTargetId(null);
-    setDropPosition(null);
   }
 
   return (
@@ -233,12 +164,12 @@ export default function AdminTemplateEditor() {
 
               <div
                 draggable={editingItemId !== item.id}
-                onDragStart={(e) => handleDragStart(e, item.id)}
-                onDragEnd={handleDragEnd}
-                onDragEnter={(e) => handleDragEnter(e, item.id)}
-                onDragLeave={handleDragLeave}
-                onDragOver={(e) => handleDragOver(e, item.id)}
-                onDrop={(e) => handleDrop(e, item.id)}
+                onDragStart={(e) => dragHandlers.onDragStart(e, item.id)}
+                onDragEnd={dragHandlers.onDragEnd}
+                onDragEnter={(e) => dragHandlers.onDragEnter(e, item.id)}
+                onDragLeave={dragHandlers.onDragLeave}
+                onDragOver={(e) => dragHandlers.onDragOver(e, item.id)}
+                onDrop={(e) => dragHandlers.onDrop(e, item.id)}
                 className={`
                   bg-white rounded-lg border border-gray-200 shadow-sm my-2
                   transition-all duration-150 cursor-grab active:cursor-grabbing
@@ -327,18 +258,15 @@ export default function AdminTemplateEditor() {
         })}
 
         {items.length === 0 && (
-          <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 py-10 text-center">
-            <Shield className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-400">{t("no_data")}</p>
-          </div>
+          <EmptyState icon={Shield} title={t("no_data")} className="border-2 border-dashed" />
         )}
       </div>
 
       {/* Add item — Google Forms style */}
       <form onSubmit={addItem} className="mt-4 mb-8">
         <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-navy-400 transition-colors p-4 space-y-3">
-          {/* Type toggle */}
-          <div className="flex gap-1.5">
+          {/* Type + Section toggles */}
+          <div className="flex flex-wrap gap-1.5">
             <button type="button" onClick={() => setNewItemType("check")}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${newItemType === "check" ? "bg-navy-800 text-white" : "bg-gray-100 text-gray-500"}`}>
               <ClipboardCheck className="w-3.5 h-3.5" /> {t("template.type_check")}
@@ -347,14 +275,30 @@ export default function AdminTemplateEditor() {
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${newItemType === "measurement" ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-500"}`}>
               <Ruler className="w-3.5 h-3.5" /> {t("template.type_measurement")}
             </button>
+            <div className="w-px h-6 bg-gray-200 mx-1 self-center" />
+            <button type="button" onClick={() => setNewItemSection("questionnaire")}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${newItemSection === "questionnaire" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+              {t("inspection.section_questionnaire")}
+            </button>
+            <button type="button" onClick={() => setNewItemSection("components")}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${newItemSection === "components" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+              {t("inspection.section_components")}
+            </button>
           </div>
 
-          {/* Item text */}
+          {/* Item text (Georgian) */}
           <div className="flex items-center gap-3">
             <Plus className="w-5 h-5 text-gray-400 shrink-0" />
             <input value={newItemText} onChange={(e) => setNewItemText(e.target.value)}
               placeholder={t("template.item_placeholder")}
               className="flex-1 text-sm bg-transparent outline-none placeholder:text-gray-400 min-h-[44px]" />
+          </div>
+
+          {/* Item text (English — optional) */}
+          <div className="flex items-center gap-3 pl-8">
+            <input value={newItemTextEn} onChange={(e) => setNewItemTextEn(e.target.value)}
+              placeholder="English name (optional)"
+              className="flex-1 text-xs bg-transparent outline-none placeholder:text-gray-300 min-h-[32px] text-gray-500 border-b border-dashed border-gray-200 focus:border-navy-400" />
           </div>
 
           {/* Measurement fields */}
@@ -365,7 +309,7 @@ export default function AdminTemplateEditor() {
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 border-violet-200 bg-violet-50/50 text-sm min-h-[48px] hover:border-violet-300 transition-colors">
                 {newItemUnit ? (
                   <span className="font-medium text-violet-700">
-                    {unitOptions.find(u => u.value === newItemUnit)?.icon} {unitOptions.find(u => u.value === newItemUnit)?.label || newItemUnit}
+                    {measurementUnits.find(u => u.value === newItemUnit)?.icon} {measurementUnits.find(u => u.value === newItemUnit)?.label || newItemUnit}
                   </span>
                 ) : (
                   <span className="text-gray-400">{t("template.unit")} — აირჩიეთ</span>
@@ -406,25 +350,10 @@ export default function AdminTemplateEditor() {
         open={showUnitPicker}
         onClose={() => setShowUnitPicker(false)}
         title={t("template.unit")}
-        options={unitOptions}
+        options={measurementUnits}
         value={newItemUnit}
         onChange={setNewItemUnit}
       />
     </div>
   );
 }
-
-const unitOptions: ActionSheetOption[] = [
-  { value: "dB", label: "dB — ხმაური", icon: "🔊", description: "დეციბელი — ხმაურის დონე" },
-  { value: "ლუქსი", label: "ლუქსი — განათება", icon: "💡", description: "განათების ინტენსივობა" },
-  { value: "°C", label: "°C — ტემპერატურა", icon: "🌡️", description: "ჰაერის ტემპერატურა ცელსიუსით" },
-  { value: "%RH", label: "%RH — ტენიანობა", icon: "💧", description: "ფარდობითი ტენიანობა" },
-  { value: "მ/წმ", label: "მ/წმ — ჰაერის მოძრაობის სიჩქარე", icon: "💨", description: "ჰაერის მოძრაობა მეტრი/წამში" },
-  { value: "mg/m³", label: "mg/m³ — საწარმოო მტვერი", icon: "🏭", description: "მტვრის კონცენტრაცია მილიგრამი/კუბ.მეტრი" },
-  { value: "ppm", label: "ppm — ქიმიური ნივთიერებები", icon: "⚗️", description: "ქიმიური ნივთიერებების შემცველობა" },
-  { value: "mg/L", label: "mg/L — ქიმიური კონცენტრაცია", icon: "🧪", description: "ხსნარში კონცენტრაცია" },
-  { value: "μSv/h", label: "μSv/h — რადიაცია", icon: "☢️", description: "რადიაციის დონე მიკროსივერტი/საათი" },
-  { value: "Pa", label: "Pa — წნევა", icon: "🎛️", description: "ატმოსფერული წნევა პასკალებში" },
-  { value: "%", label: "% — პროცენტი", icon: "📊", description: "პროცენტული მაჩვენებელი" },
-  { value: "pH", label: "pH — მჟავიანობა", icon: "🔬", description: "წყლის/ხსნარის მჟავიანობა" },
-];

@@ -16,18 +16,16 @@ export default function AdminDashboard() {
 
   const { allItems, violations, warnings, safeItems, pendingInspections, completedInspections, avgScore } = useMemo(() => {
     const all = data.inspections.flatMap((i) => i.items || []);
-    let safe = 0, warn = 0, viol = 0;
-    const safeArr: typeof all = [], warnArr: typeof all = [], violArr: typeof all = [];
+    const safeArr: typeof all = [], violArr: typeof all = [];
     for (const item of all) {
-      if (item.status === "violation") { viol++; violArr.push(item); }
-      else if (item.status === "warning") { warn++; warnArr.push(item); }
-      else if (item.status === "safe") { safe++; safeArr.push(item); }
+      if (item.status === "violation") { violArr.push(item); }
+      else if (item.status === "safe") { safeArr.push(item); }
     }
     const pending = data.inspections.filter((i) => i.status === "in_progress");
     const completed = data.inspections.filter((i) => i.status === "completed");
     const scores = completed.filter((i) => i.safety_score != null).map((i) => i.safety_score!) as number[];
     const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
-    return { allItems: all, violations: violArr, warnings: warnArr, safeItems: safeArr, pendingInspections: pending, completedInspections: completed, avgScore: avg };
+    return { allItems: all, violations: violArr, warnings: [] as typeof all, safeItems: safeArr, pendingInspections: pending, completedInspections: completed, avgScore: avg };
   }, [data.inspections]);
 
   return (
@@ -82,12 +80,10 @@ export default function AdminDashboard() {
             <div className="space-y-2">
               <div className="flex h-3 rounded-full overflow-hidden bg-gray-100">
                 {safeItems.length > 0 && <div className="bg-green-500 transition-[width]" style={{ width: `${(safeItems.length / allItems.length) * 100}%` }} />}
-                {warnings.length > 0 && <div className="bg-amber-400 transition-[width]" style={{ width: `${(warnings.length / allItems.length) * 100}%` }} />}
                 {violations.length > 0 && <div className="bg-red-500 transition-[width]" style={{ width: `${(violations.length / allItems.length) * 100}%` }} />}
               </div>
               <div className="flex items-center justify-between text-[11px] font-medium">
                 <span className="flex items-center gap-1 text-green-600"><CheckCircle className="w-3 h-3" /> {safeItems.length} {t("inspection.safe")}</span>
-                <span className="flex items-center gap-1 text-amber-600"><AlertTriangle className="w-3 h-3" /> {warnings.length} {t("inspection.warning")}</span>
                 <span className="flex items-center gap-1 text-red-600"><XCircle className="w-3 h-3" /> {violations.length} {t("inspection.violation")}</span>
               </div>
             </div>

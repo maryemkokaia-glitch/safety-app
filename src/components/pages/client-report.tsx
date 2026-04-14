@@ -8,7 +8,7 @@ import { useDemo } from "@/lib/demo-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Loader2, CheckCircle, AlertTriangle, XCircle, MinusCircle, Calendar, User, MapPin, FileText, Ruler, Share2 } from "lucide-react";
+import { ArrowLeft, Download, Loader2, CheckCircle, XCircle, MinusCircle, Calendar, User, MapPin, FileText, Ruler, Share2 } from "lucide-react";
 import { getScoreBgColor, getScoreLabel, getStatusLabel, getStatusColor, formatNormRange } from "@/lib/utils/safety-score";
 import { generatePDF } from "@/lib/utils/pdf";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -17,7 +17,6 @@ function StatusIcon({ status }: { status: string }) {
   const cls = "w-5 h-5";
   switch (status) {
     case "safe": return <CheckCircle className={`${cls} text-green-500`} />;
-    case "warning": return <AlertTriangle className={`${cls} text-amber-500`} />;
     case "violation": return <XCircle className={`${cls} text-red-500`} />;
     default: return <MinusCircle className={`${cls} text-gray-300`} />;
   }
@@ -46,7 +45,6 @@ export default function ClientReport() {
   const inspector = data.users.find((u) => u.id === inspection.inspector_id);
   const items = inspection.items ?? [];
   const violations = items.filter((i) => i.status === "violation");
-  const warnings = items.filter((i) => i.status === "warning");
   const safe = items.filter((i) => i.status === "safe");
   const na = items.filter((i) => i.status === "not_applicable");
   const score = inspection.safety_score ?? 0;
@@ -61,6 +59,7 @@ export default function ClientReport() {
           safety_score: inspection.safety_score ?? null,
           started_at: inspection.started_at,
           notes: inspection.notes ?? null,
+          detailed_description: (inspection as any).detailed_description ?? null,
           project: { name: project?.name, address: project?.address ?? null },
           template: { name: template?.name },
           inspector: { full_name: inspector?.full_name },
@@ -130,14 +129,10 @@ export default function ClientReport() {
           <p className="text-5xl font-black">{score}%</p>
           <p className="text-sm font-semibold mt-1 opacity-80">{lang === "ka" ? getScoreLabel(score) : (score >= 90 ? "Excellent" : score >= 70 ? "Good" : score >= 50 ? "Needs Attention" : "Critical")}</p>
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <div className="bg-white/30 rounded-xl py-2 text-center">
             <p className="text-xl font-bold">{safe.length}</p>
             <p className="text-[10px] font-medium opacity-70">{t("inspection.safe")}</p>
-          </div>
-          <div className="bg-white/30 rounded-xl py-2 text-center">
-            <p className="text-xl font-bold">{warnings.length}</p>
-            <p className="text-[10px] font-medium opacity-70">{t("inspection.warning")}</p>
           </div>
           <div className="bg-white/30 rounded-xl py-2 text-center">
             <p className="text-xl font-bold">{violations.length}</p>
@@ -168,13 +163,26 @@ export default function ClientReport() {
         </CardContent>
       </Card>
 
-      {/* Notes */}
+      {/* Detailed description */}
+      {(inspection as any).detailed_description && (
+        <Card className="mb-4">
+          <CardContent>
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="w-4 h-4 text-gray-400" />
+              <h3 className="font-semibold text-gray-900 text-sm">{t("inspection.detailed_description")}</h3>
+            </div>
+            <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{(inspection as any).detailed_description}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Conclusion */}
       {inspection.notes && (
         <Card className="mb-4">
           <CardContent>
             <div className="flex items-center gap-2 mb-2">
               <FileText className="w-4 h-4 text-gray-400" />
-              <h3 className="font-semibold text-gray-900 text-sm">{t("report.notes")}</h3>
+              <h3 className="font-semibold text-gray-900 text-sm">{t("inspection.conclusion")}</h3>
             </div>
             <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{inspection.notes}</p>
           </CardContent>
@@ -192,6 +200,7 @@ export default function ClientReport() {
               <Card key={item.id} className="border-l-4 border-l-red-400">
                 <CardContent>
                   <p className="text-sm font-medium text-gray-900">{item.template_item?.text}</p>
+                  {item.template_item?.text_en && <p className="text-[11px] text-gray-400 mt-0.5">{item.template_item.text_en}</p>}
                   {item.is_critical && <Badge variant="danger" className="mt-1.5">{t("inspection.critical")}</Badge>}
                   {item.comment && <p className="text-xs text-gray-500 mt-1.5 italic">{item.comment}</p>}
                   {(item.photos?.length ?? 0) > 0 && (
@@ -219,6 +228,7 @@ export default function ClientReport() {
               <StatusIcon status={item.status} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900 leading-snug">{item.template_item?.text}</p>
+                {item.template_item?.text_en && <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">{item.template_item.text_en}</p>}
                 {/* Measurement value display */}
                 {item.template_item?.input_type === "measurement" && item.measured_value != null && (
                   <div className="flex items-center gap-2 mt-1">

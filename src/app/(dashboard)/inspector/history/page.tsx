@@ -3,6 +3,8 @@
 import { useDemo } from "@/lib/demo-context";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
+import { ScoreBadge } from "@/components/ui/score-badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { History, ChevronRight, ClipboardList, CheckCircle } from "lucide-react";
 
@@ -58,10 +60,7 @@ export default function InspectionHistoryPage() {
       </div>
 
       {inspections.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-          <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm text-gray-400">{t("dashboard.no_inspections")}</p>
-        </div>
+        <EmptyState icon={History} title={t("dashboard.no_inspections")} />
       ) : (
         <div className="space-y-5">
           {groups.map((group) => (
@@ -77,13 +76,7 @@ export default function InspectionHistoryPage() {
                     <button key={insp.id} onClick={() => router.push(href)}
                       className="w-full bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3 hover:shadow-md active:bg-gray-50 transition-all text-left">
                       {isCompleted ? (
-                        <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center shrink-0",
-                          (insp.safety_score ?? 0) >= 80 ? "bg-green-100" : (insp.safety_score ?? 0) >= 50 ? "bg-amber-100" : "bg-red-100"
-                        )}>
-                          <span className={cn("text-sm font-bold",
-                            (insp.safety_score ?? 0) >= 80 ? "text-green-700" : (insp.safety_score ?? 0) >= 50 ? "text-amber-700" : "text-red-700"
-                          )}>{insp.safety_score}%</span>
-                        </div>
+                        <ScoreBadge score={insp.safety_score ?? 0} size="md" />
                       ) : (
                         <div className="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
                           <ClipboardList className="w-5 h-5 text-amber-600" />

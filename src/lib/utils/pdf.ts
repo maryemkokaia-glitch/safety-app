@@ -5,6 +5,7 @@ interface PDFInspectionData {
   safety_score: number | null;
   started_at: string;
   notes: string | null;
+  detailed_description?: string | null;
   project?: { name?: string; address?: string | null };
   template?: { name?: string };
   inspector?: { full_name?: string };
@@ -14,15 +15,14 @@ interface PDFItem {
   status: ChecklistItemStatus;
   is_critical: boolean;
   comment: string | null;
-  template_item?: { text?: string };
+  template_item?: { text?: string; text_en?: string | null; section?: "questionnaire" | "components" };
 }
 
 const HEADER_BG: [number, number, number] = [30, 64, 175];
 
 const STATUS_CFG: Record<string, { label: string; bg: [number, number, number]; text: [number, number, number] }> = {
-  safe: { label: "SAFE", bg: [220, 252, 231], text: [22, 163, 74] },
-  warning: { label: "WARNING", bg: [254, 249, 195], text: [161, 98, 7] },
-  violation: { label: "VIOLATION", bg: [254, 226, 226], text: [220, 38, 38] },
+  safe: { label: "VALID", bg: [220, 252, 231], text: [22, 163, 74] },
+  violation: { label: "DAMAGED", bg: [254, 226, 226], text: [220, 38, 38] },
   not_applicable: { label: "N/A", bg: [241, 245, 249], text: [148, 163, 184] },
 };
 
@@ -120,9 +120,8 @@ export async function generatePDF(
   // Stats pills — dynamic widths
   y += 8;
   const counts = [
-    { label: "Safe", count: items.filter((i) => i.status === "safe").length, bg: [220, 252, 231] as const, text: [22, 163, 74] as const },
-    { label: "Warning", count: items.filter((i) => i.status === "warning").length, bg: [254, 249, 195] as const, text: [161, 98, 7] as const },
-    { label: "Violation", count: items.filter((i) => i.status === "violation").length, bg: [254, 226, 226] as const, text: [220, 38, 38] as const },
+    { label: "Valid", count: items.filter((i) => i.status === "safe").length, bg: [220, 252, 231] as const, text: [22, 163, 74] as const },
+    { label: "Damaged", count: items.filter((i) => i.status === "violation").length, bg: [254, 226, 226] as const, text: [220, 38, 38] as const },
     { label: "N/A", count: items.filter((i) => i.status === "not_applicable").length, bg: [241, 245, 249] as const, text: [148, 163, 184] as const },
   ];
   doc.setFontSize(8);
@@ -141,103 +140,127 @@ export async function generatePDF(
 
   y += 12;
 
-  // ========== TABLE (using jspdf-autotable) ==========
-  const tableBody = items.map((item, idx) => {
-    const critical = item.is_critical && item.status === "violation" ? " !" : "";
-    return [
-      `${idx + 1}${critical}`,
-      item.template_item?.text || "-",
-      (STATUS_CFG[item.status] || STATUS_CFG.not_applicable).label,
-      item.comment || "",
-    ];
-  });
+  // ========== TABLES PER SECTION (using jspdf-autotable) ==========
+  const questionnaire = items.filter((i) => i.template_item?.section === "questionnaire");
+  const components = items.filter((i) => (i.template_item?.section ?? "components") === "components");
 
-  autoTable(doc, {
-    startY: y,
-    margin: { left: m, right: m },
-    head: [["#", "Checklist Item", "Status", "Comment"]],
-    body: tableBody,
-    theme: "grid",
-    headStyles: {
-      fillColor: HEADER_BG,
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
-      fontSize: 7,
-      font: fontFamily,
-    },
-    styles: {
-      font: fontFamily,
-      fontSize: 7,
-      cellPadding: 2,
-      lineColor: [241, 245, 249],
-      lineWidth: 0.2,
-    },
-    alternateRowStyles: {
-      fillColor: [248, 250, 252],
-    },
-    columnStyles: {
-      0: { cellWidth: 10, halign: "center" },
-      1: { cellWidth: "auto" },
-      2: { cellWidth: 24, halign: "center" },
-      3: { cellWidth: 38 },
-    },
-    didParseCell(data) {
-      if (data.section !== "body") return;
-      const rowIdx = data.row.index;
-      const item = items[rowIdx];
-      if (!item) return;
+  function renderSection(sectionItems: PDFItem[], heading: string | null) {
+    if (sectionItems.length === 0) return;
 
-      // Color the status cell text
-      if (data.column.index === 2) {
-        const cfg = STATUS_CFG[item.status] || STATUS_CFG.not_applicable;
-        data.cell.styles.textColor = cfg.text;
-        data.cell.styles.fontStyle = "bold";
-      }
-
-      // Red background for violation rows
-      if (item.status === "violation") {
-        data.cell.styles.fillColor = [254, 236, 236];
-      }
-
-      // Gray text for row number
-      if (data.column.index === 0) {
-        data.cell.styles.textColor = [148, 163, 184];
-      }
-
-      // Gray text for comments
-      if (data.column.index === 3) {
-        data.cell.styles.textColor = [100, 116, 139];
-      }
-    },
-    didDrawCell(data) {
-      if (data.section !== "body" || data.column.index !== 0) return;
-      const item = items[data.row.index];
-      if (!item || !item.is_critical || item.status !== "violation") return;
-      // Draw critical marker circle
-      const cx = data.cell.x + data.cell.width - 4;
-      const cy = data.cell.y + data.cell.height / 2;
-      doc.setFillColor(239, 68, 68);
-      doc.circle(cx, cy, 2, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(5);
+    if (heading) {
+      if (y + 12 > ph - 20) { doc.addPage(); y = 20; }
       setBold();
-      doc.text("!", cx - 0.7, cy + 1);
-      setNormal();
-    },
-  });
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.text(heading, m, y);
+      y += 5;
+    }
 
-  // Get Y after table
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  y = (doc as any).lastAutoTable.finalY + 8;
+    const tableBody = sectionItems.map((item, idx) => {
+      const critical = item.is_critical && item.status === "violation" ? " !" : "";
+      const text = item.template_item?.text_en
+        ? `${item.template_item.text}\n${item.template_item.text_en}`
+        : item.template_item?.text || "-";
+      return [
+        `${idx + 1}${critical}`,
+        text,
+        (STATUS_CFG[item.status] || STATUS_CFG.not_applicable).label,
+        item.comment || "",
+      ];
+    });
 
-  // ========== NOTES ==========
-  if (inspection.notes) {
+    autoTable(doc, {
+      startY: y,
+      margin: { left: m, right: m },
+      head: [["#", "Item / Component", "Status", "Comment"]],
+      body: tableBody,
+      theme: "grid",
+      headStyles: {
+        fillColor: HEADER_BG,
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 7,
+        font: fontFamily,
+      },
+      styles: {
+        font: fontFamily,
+        fontSize: 7,
+        cellPadding: 2,
+        lineColor: [241, 245, 249],
+        lineWidth: 0.2,
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: "center" },
+        1: { cellWidth: "auto" },
+        2: { cellWidth: 26, halign: "center" },
+        3: { cellWidth: 38 },
+      },
+      didParseCell(data) {
+        if (data.section !== "body") return;
+        const rowIdx = data.row.index;
+        const item = sectionItems[rowIdx];
+        if (!item) return;
+
+        if (data.column.index === 2) {
+          const cfg = STATUS_CFG[item.status] || STATUS_CFG.not_applicable;
+          data.cell.styles.textColor = cfg.text;
+          data.cell.styles.fontStyle = "bold";
+        }
+
+        if (item.status === "violation") {
+          data.cell.styles.fillColor = [254, 236, 236];
+        }
+
+        if (data.column.index === 0) {
+          data.cell.styles.textColor = [148, 163, 184];
+        }
+
+        if (data.column.index === 3) {
+          data.cell.styles.textColor = [100, 116, 139];
+        }
+      },
+      didDrawCell(data) {
+        if (data.section !== "body" || data.column.index !== 0) return;
+        const item = sectionItems[data.row.index];
+        if (!item || !item.is_critical || item.status !== "violation") return;
+        const cx = data.cell.x + data.cell.width - 4;
+        const cy = data.cell.y + data.cell.height / 2;
+        doc.setFillColor(239, 68, 68);
+        doc.circle(cx, cy, 2, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(5);
+        setBold();
+        doc.text("!", cx - 0.7, cy + 1);
+        setNormal();
+      },
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    y = (doc as any).lastAutoTable.finalY + 6;
+  }
+
+  // Render both sections (or single if no questionnaire)
+  if (questionnaire.length > 0) {
+    renderSection(questionnaire, "Checklist / კითხვარი");
+  }
+  renderSection(
+    components,
+    questionnaire.length > 0 ? "Components / კომპონენტები" : null,
+  );
+
+  y += 4;
+
+  // ========== DETAILED DESCRIPTION + CONCLUSION ==========
+  function renderTextBlock(title: string, content: string) {
     setNormal();
     doc.setFontSize(8);
-    const notesLines = doc.splitTextToSize(inspection.notes, pw - m * 2);
-    const notesHeight = notesLines.length * 4 + 10;
+    const lines = doc.splitTextToSize(content, pw - m * 2);
+    const blockHeight = lines.length * 4 + 10;
 
-    if (y + notesHeight > ph - 20) {
+    if (y + blockHeight > ph - 20) {
       doc.addPage();
       y = 20;
     }
@@ -245,12 +268,33 @@ export async function generatePDF(
     setBold();
     doc.setFontSize(9);
     doc.setTextColor(30, 41, 59);
-    doc.text("Notes:", m, y);
+    doc.text(title, m, y);
     y += 5;
     setNormal();
     doc.setFontSize(8);
     doc.setTextColor(71, 85, 105);
-    doc.text(notesLines, m, y);
+    doc.text(lines, m, y);
+    y += lines.length * 4 + 4;
+  }
+
+  if (inspection.detailed_description) {
+    renderTextBlock("Detailed description / დეტალური აღწერა:", inspection.detailed_description);
+  }
+  if (inspection.notes) {
+    renderTextBlock("Conclusion / დასკვნითი ნაწილი:", inspection.notes);
+  }
+
+  // Inspector + date line
+  if (y + 10 < ph - 20) {
+    y += 4;
+    setNormal();
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${inspection.inspector?.full_name || "-"}  —  ${new Date(inspection.started_at).toLocaleDateString("ka-GE")}`,
+      m,
+      y,
+    );
   }
 
   // ========== FOOTER ==========

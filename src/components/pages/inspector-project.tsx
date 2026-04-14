@@ -7,6 +7,10 @@ import { useDemo, generateId } from "@/lib/demo-context";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Plus, ChevronRight, ClipboardList, Play, X, History } from "lucide-react";
+import { ProjectDocuments } from "@/components/project-documents";
+import { ProjectTimeline } from "@/components/project-timeline";
+import { computeRiskScore, severityColors } from "@/lib/utils/alerts";
+import type { TranslationKey } from "@/lib/i18n";
 
 
 const categoryIcons: Record<string, string> = {
@@ -86,6 +90,16 @@ export default function InspectorProject() {
               {project.address}
             </p>
           )}
+          {(() => {
+            const risk = computeRiskScore(project, data);
+            const c = severityColors(risk.level);
+            return (
+              <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold mt-2 border", c.bg, c.text, c.border)}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", c.dot)} />
+                {t(`risk.${risk.level}` as TranslationKey)} · {risk.score}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -213,6 +227,14 @@ export default function InspectorProject() {
           </div>
         )}
       </div>
+
+      {/* Documents */}
+      <div className="mt-6">
+        <ProjectDocuments projectId={id} />
+      </div>
+
+      {/* Timeline */}
+      <ProjectTimeline projectId={id} />
     </div>
   );
 }

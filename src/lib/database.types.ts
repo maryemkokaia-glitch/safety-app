@@ -23,6 +23,27 @@ export type RegulationCategory = "worker_safety" | "equipment_safety" | "site_sa
 
 export type NotificationType = "violation" | "report_ready" | "inspection_due";
 
+export type DocumentType =
+  | "safety_certificate"
+  | "insurance"
+  | "inspection_passport"
+  | "training_cert"
+  | "risk_assessment"
+  | "other";
+
+export type DocumentStatus = "valid" | "expiring_soon" | "expired" | "no_expiry";
+
+export interface ProjectDocument {
+  id: string;
+  project_id: string;
+  title: string;
+  doc_type: DocumentType;
+  expiry_date: string | null;
+  uploaded_at: string;
+  file_url?: string | null;
+  note?: string | null;
+}
+
 export interface User {
   id: string;
   email: string;

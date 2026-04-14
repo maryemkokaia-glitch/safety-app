@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useRouter } from "next/navigation";
 import { MapPin, ChevronRight, ClipboardList, FolderOpen, Plus, X, Zap, ArrowRight } from "lucide-react";
+import { ProjectAlertsBanner } from "@/components/project-alerts-banner";
+import { computeRiskScore, severityColors } from "@/lib/utils/alerts";
 
 export default function InspectorDashboard() {
   const { data, updateData, user, t } = useDemo();
@@ -72,6 +74,9 @@ export default function InspectorDashboard() {
         </h1>
         <p className="text-sm text-gray-400 mt-0.5 capitalize">{today}</p>
       </div>
+
+      {/* Compliance alerts banner */}
+      <ProjectAlertsBanner />
 
       {/* Stats strip */}
       <div className="flex gap-2 mb-5">
@@ -158,9 +163,16 @@ export default function InspectorDashboard() {
         <div className="grid grid-cols-2 gap-2.5">
           {activeProjects.map((project) => {
             const stats = getProjectStats(project.id);
+            const risk = computeRiskScore(project, data);
+            const riskC = severityColors(risk.level);
             return (
               <button key={project.id} onClick={() => router.push(`/inspector/project/${project.id}`)}
-                className="bg-white rounded-xl border border-gray-200 p-4 text-left hover:shadow-md hover:border-blue-200 active:bg-gray-50 transition-all">
+                className="bg-white rounded-xl border border-gray-200 p-4 text-left hover:shadow-md hover:border-blue-200 active:bg-gray-50 transition-all relative">
+                {/* Risk indicator dot — top-right */}
+                <span
+                  className={cn("absolute top-3 right-3 w-2.5 h-2.5 rounded-full", riskC.dot)}
+                  title={`${t(`risk.${risk.level}` as any)}: ${risk.score}`}
+                />
                 {/* Score or icon */}
                 {stats.lastScore !== null ? (
                   <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-3",
@@ -175,7 +187,7 @@ export default function InspectorDashboard() {
                     <FolderOpen className="w-5 h-5 text-blue-400" />
                   </div>
                 )}
-                <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 mb-1">{project.name}</p>
+                <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 mb-1 pr-4">{project.name}</p>
                 {project.address && (
                   <p className="text-[11px] text-gray-400 flex items-center gap-0.5 truncate">
                     <MapPin className="w-3 h-3 shrink-0" />{project.address}

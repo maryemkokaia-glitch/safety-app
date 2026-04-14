@@ -1,5 +1,12 @@
-import { Project, Regulation, User, Notification, TemplateWithItems, InspectionWithItems } from "./database.types";
+import { Project, Regulation, User, Notification, TemplateWithItems, InspectionWithItems, ProjectDocument } from "./database.types";
 import { AppData } from "./store";
+
+// Helper to create relative-to-today ISO dates so alerts always trigger
+function daysFromNow(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
 
 // =============================================
 // Demo Data
@@ -319,6 +326,19 @@ const demoInspections: InspectionWithItems[] = [
   },
 ];
 
+// Demo documents — dates computed relative to today so alerts trigger in any month
+const demoDocuments: ProjectDocument[] = [
+  // Project 1 — one expired, one expiring soon, one valid
+  { id: "doc-1", project_id: "proj-1", title: "ხარაჩოს სერთიფიკატი", doc_type: "safety_certificate", expiry_date: daysFromNow(-10), uploaded_at: daysFromNow(-200), note: null },
+  { id: "doc-2", project_id: "proj-1", title: "სამშენებლო დაზღვევა", doc_type: "insurance", expiry_date: daysFromNow(5), uploaded_at: daysFromNow(-90), note: null },
+  { id: "doc-3", project_id: "proj-1", title: "რისკის შეფასება", doc_type: "risk_assessment", expiry_date: daysFromNow(180), uploaded_at: daysFromNow(-30), note: null },
+  // Project 2 — valid docs + one expiring
+  { id: "doc-4", project_id: "proj-2", title: "ხარაჩოს პასპორტი", doc_type: "inspection_passport", expiry_date: daysFromNow(3), uploaded_at: daysFromNow(-120), note: null },
+  { id: "doc-5", project_id: "proj-2", title: "მუშათა ტრენინგი", doc_type: "training_cert", expiry_date: daysFromNow(60), uploaded_at: daysFromNow(-40), note: null },
+  // Project 3 — only one valid doc
+  { id: "doc-6", project_id: "proj-3", title: "უსაფრთხოების სერთიფიკატი", doc_type: "safety_certificate", expiry_date: daysFromNow(300), uploaded_at: daysFromNow(-20), note: null },
+];
+
 export function getDefaultData(): AppData {
   return {
     lang: "ka",
@@ -331,6 +351,7 @@ export function getDefaultData(): AppData {
     notifications: [
       { id: "notif-1", user_id: "admin-1", title: "დარღვევა: საცხოვრებელი კომპლექსი ვაკეში", body: "1 დარღვევა აღმოჩენილია ინსპექციის დროს. ქულა: 72%", type: "violation", is_read: false, related_inspection_id: "insp-1", created_at: "2024-03-15T11:30:00Z" },
     ],
+    documents: demoDocuments,
     users: [demoAdmin, demoInspector, demoInspector2, demoInspector3, demoClient],
   };
 }

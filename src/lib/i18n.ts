@@ -76,6 +76,46 @@ export const translations = {
   "inspection.conclusion_placeholder": { ka: "საბოლოო დასკვნა ობიექტის მდგომარეობის შესახებ...", en: "Final conclusion on the state of the object..." },
   "inspection.section_questionnaire": { ka: "კითხვარი", en: "Checklist" },
   "inspection.section_components": { ka: "კომპონენტების შემოწმება", en: "Component Inspection" },
+
+  // Documents
+  "documents.title": { ka: "დოკუმენტები", en: "Documents" },
+  "documents.add": { ka: "დოკუმენტის დამატება", en: "Add document" },
+  "documents.none": { ka: "დოკუმენტები არ არის", en: "No documents yet" },
+  "documents.expiry": { ka: "ვადა", en: "Expiry" },
+  "documents.expired": { ka: "ვადაგასული", en: "Expired" },
+  "documents.expiring_soon": { ka: "იწურება", en: "Expiring soon" },
+  "documents.valid": { ka: "მოქმედი", en: "Valid" },
+  "documents.no_expiry": { ka: "უვადო", en: "No expiry" },
+  "documents.type.safety_certificate": { ka: "უსაფრთხოების სერთიფიკატი", en: "Safety Certificate" },
+  "documents.type.insurance": { ka: "დაზღვევა", en: "Insurance" },
+  "documents.type.inspection_passport": { ka: "ინსპექციის პასპორტი", en: "Inspection Passport" },
+  "documents.type.training_cert": { ka: "ტრენინგის სერთიფიკატი", en: "Training Certificate" },
+  "documents.type.risk_assessment": { ka: "რისკის შეფასება", en: "Risk Assessment" },
+  "documents.type.other": { ka: "სხვა", en: "Other" },
+  "documents.title_label": { ka: "დასახელება", en: "Title" },
+  "documents.type_label": { ka: "ტიპი", en: "Type" },
+  "documents.expiry_label": { ka: "ვადის თარიღი", en: "Expiry date" },
+
+  // Alerts
+  "alerts.title": { ka: "გაფრთხილებები", en: "Alerts" },
+  "alerts.none": { ka: "ყველაფერი წესრიგშია", en: "All clear" },
+  "alerts.view_all": { ka: "ყველა", en: "View all" },
+  "alerts.document_expired": { ka: "ვადაგასული დოკუმენტი", en: "Expired document" },
+  "alerts.document_expiring": { ka: "დოკუმენტი იწურება", en: "Document expiring soon" },
+  "alerts.inspection_gap": { ka: "ინსპექცია საჭიროა", en: "Inspection needed" },
+  "alerts.low_score": { ka: "დაბალი უსაფრთხოების ქულა", en: "Low safety score" },
+
+  // Risk
+  "risk.low": { ka: "დაბალი რისკი", en: "Low risk" },
+  "risk.medium": { ka: "საშუალო რისკი", en: "Medium risk" },
+  "risk.high": { ka: "მაღალი რისკი", en: "High risk" },
+
+  // Timeline
+  "timeline.title": { ka: "ისტორია", en: "Timeline" },
+  "timeline.inspection_started": { ka: "ინსპექცია დაიწყო", en: "Inspection started" },
+  "timeline.inspection_completed": { ka: "ინსპექცია დასრულდა", en: "Inspection completed" },
+  "timeline.document_uploaded": { ka: "დოკუმენტი აიტვირთა", en: "Document uploaded" },
+  "timeline.document_expires": { ka: "დოკუმენტი იწურება", en: "Document expires" },
   "inspection.progress": { ka: "პროგრესი", en: "Progress" },
   "inspection.score": { ka: "ქულა", en: "Score" },
   "inspection.select_project": { ka: "აირჩიეთ პროექტი", en: "Select project" },

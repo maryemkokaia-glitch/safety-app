@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Notification, UserRole, TemplateWithItems, InspectionWithItems, Project, Regulation } from "./database.types";
+import { User, Notification, UserRole, TemplateWithItems, InspectionWithItems, Project, Regulation, ProjectDocument } from "./database.types";
 import { getDefaultData, demoAdmin, demoInspector, demoClient } from "./demo-data";
 
 // Re-export for backwards compatibility
@@ -21,10 +21,11 @@ export interface AppData {
   inspections: InspectionWithItems[];
   regulations: Regulation[];
   notifications: Notification[];
+  documents: ProjectDocument[];
   users: User[];
 }
 
-// Migration: old "warning" status no longer exists → downgrade to "violation"
+// Migration: old "warning" status → "violation"; ensure documents array exists
 function migrateLegacyData(data: AppData): AppData {
   let migrated = false;
   const inspections = data.inspections.map((insp) => {
@@ -37,7 +38,13 @@ function migrateLegacyData(data: AppData): AppData {
     });
     return migrated ? { ...insp, items } : insp;
   });
-  return migrated ? { ...data, inspections } : data;
+  let result = migrated ? { ...data, inspections } : data;
+  // Ensure documents array exists (older localStorage won't have it)
+  if (!Array.isArray((result as any).documents)) {
+    const defaults = getDefaultData();
+    result = { ...result, documents: defaults.documents };
+  }
+  return result;
 }
 
 export function loadData(): AppData {

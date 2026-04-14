@@ -69,6 +69,7 @@ export function SupabaseDataProvider({ children }: { children: React.ReactNode }
         })),
         regulations,
         notifications,
+        documents: [],
         users,
       });
     } catch (err) {
@@ -136,6 +137,6 @@ function makeEmptyData(user: User, lang: Lang): AppData {
     lang,
     currentRole: (user.role as UserRole) || "inspector",
     currentUser: user,
-    projects: [], templates: [], inspections: [], regulations: [], notifications: [], users: [],
+    projects: [], templates: [], inspections: [], regulations: [], notifications: [], documents: [], users: [],
   };
 }

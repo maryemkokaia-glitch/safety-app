@@ -12,7 +12,13 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Never block these paths
-  if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/logout") {
+  if (
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/logout" ||
+    pathname.startsWith("/expert/")
+  ) {
     return NextResponse.next();
   }
 

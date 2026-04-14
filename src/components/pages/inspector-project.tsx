@@ -10,6 +10,8 @@ import { ArrowLeft, MapPin, Plus, ChevronRight, ClipboardList, Play, X, History 
 import { ProjectDocuments } from "@/components/project-documents";
 import { ProjectTimeline } from "@/components/project-timeline";
 import { computeRiskScore, severityColors } from "@/lib/utils/alerts";
+import { generateAuditPackage } from "@/lib/utils/audit-export";
+import { Download } from "lucide-react";
 import type { TranslationKey } from "@/lib/i18n";
 
 
@@ -28,6 +30,7 @@ export default function InspectorProject() {
   const router = useRouter();
   const { data, updateData, user, t } = useDemo();
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const project = data.projects.find((p) => p.id === id);
   if (!project) return <div className="text-center py-12 text-gray-500">{t("no_data")}</div>;
@@ -235,6 +238,32 @@ export default function InspectorProject() {
 
       {/* Timeline */}
       <ProjectTimeline projectId={id} />
+
+      {/* Audit export */}
+      <div className="mt-6">
+        <button
+          onClick={async () => {
+            setExporting(true);
+            try {
+              await generateAuditPackage(project, data);
+            } finally {
+              setExporting(false);
+            }
+          }}
+          disabled={exporting}
+          className="w-full flex items-center gap-3 px-4 py-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 active:bg-blue-50 transition-colors disabled:opacity-50"
+        >
+          <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+            <Download className="w-5 h-5 text-blue-600" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-bold text-gray-900">
+              {exporting ? t("audit.generating") : t("audit.export")}
+            </p>
+            <p className="text-[11px] text-gray-400">{t("audit.export_description")}</p>
+          </div>
+        </button>
+      </div>
     </div>
   );
 }

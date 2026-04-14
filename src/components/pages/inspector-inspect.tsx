@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScoreBadge } from "@/components/ui/score-badge";
 import { InspectionItemRow } from "@/components/inspection-item-row";
-import { Send, ArrowLeft } from "lucide-react";
+import { Send, ArrowLeft, ArrowDown } from "lucide-react";
 import { calculateSafetyScore, getScoreLabel, getStatusFromMeasurement } from "@/lib/utils/safety-score";
 import { compressImage } from "@/lib/utils/image";
 import type { ChecklistItemStatus } from "@/lib/database.types";
@@ -193,7 +193,24 @@ export default function InspectorInspect() {
 
       {/* Submit button */}
       <div className="fixed bottom-16 left-0 right-0 z-20 px-4 pb-2 lg:pl-68">
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-xl mx-auto relative">
+          {/* Next-unanswered floating hint */}
+          {completedCount < items.length && (
+            <button
+              onClick={() => {
+                const next = items.find((i) => i.status === "not_applicable");
+                if (next) {
+                  const el = document.getElementById(`insp-item-${next.id}`);
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }}
+              className="absolute -top-12 right-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-blue-200 text-blue-700 text-xs font-semibold shadow-md hover:bg-blue-50 active:scale-95 transition-all"
+              aria-label="Next unanswered"
+            >
+              <ArrowDown className="w-3.5 h-3.5" />
+              შემდეგი ({items.length - completedCount})
+            </button>
+          )}
           <Button onClick={() => setShowConfirm(true)} size="lg" className="w-full text-base shadow-lg shadow-navy-800/20">
             <Send className="w-5 h-5 mr-2" />
             {t("inspection.finish")} — {score}% {getScoreLabel(score)}

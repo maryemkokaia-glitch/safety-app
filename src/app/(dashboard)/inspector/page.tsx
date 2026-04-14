@@ -9,6 +9,8 @@ import { Modal } from "@/components/ui/modal";
 import { useRouter } from "next/navigation";
 import { MapPin, ChevronRight, ClipboardList, FolderOpen, Plus, X, Zap, ArrowRight } from "lucide-react";
 import { ProjectAlertsBanner } from "@/components/project-alerts-banner";
+import { InspectionQueue } from "@/components/inspection-queue";
+import { OnboardingCard } from "@/components/onboarding-card";
 import { computeRiskScore, severityColors } from "@/lib/utils/alerts";
 
 export default function InspectorDashboard() {
@@ -75,8 +77,14 @@ export default function InspectorDashboard() {
         <p className="text-sm text-gray-400 mt-0.5 capitalize">{today}</p>
       </div>
 
+      {/* Onboarding (only shows for new users) */}
+      <OnboardingCard />
+
       {/* Compliance alerts banner */}
       <ProjectAlertsBanner />
+
+      {/* Scheduled inspection queue */}
+      <InspectionQueue />
 
       {/* Stats strip */}
       <div className="flex gap-2 mb-5">
@@ -199,6 +207,7 @@ export default function InspectorDashboard() {
           })}
           {/* Add new project card */}
           <button
+            data-onboarding="add-project"
             onClick={() => setShowAddProject(true)}
             className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-4 flex flex-col items-center justify-center text-center hover:border-blue-300 hover:bg-blue-50/50 active:bg-blue-50 transition-colors min-h-[140px]"
           >

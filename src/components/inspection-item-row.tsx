@@ -34,8 +34,8 @@ export const InspectionItemRow = memo(function InspectionItemRow({
   commentPlaceholder, enterValuePlaceholder,
 }: InspectionItemRowProps) {
   return (
-    <div className={cn(
-      "transition-colors",
+    <div id={`insp-item-${item.id}`} className={cn(
+      "transition-colors scroll-mt-24",
       item.status === "violation" ? "bg-red-50/50" :
       item.status === "safe" ? "bg-green-50/40" : ""
     )}>

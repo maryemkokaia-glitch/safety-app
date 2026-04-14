@@ -110,6 +110,28 @@ export const translations = {
   "risk.medium": { ka: "საშუალო რისკი", en: "Medium risk" },
   "risk.high": { ka: "მაღალი რისკი", en: "High risk" },
 
+  // Schedule
+  "schedule.title": { ka: "ამ კვირას", en: "This week" },
+  "schedule.never_inspected": { ka: "პირველი ინსპექცია", en: "First inspection" },
+  "schedule.overdue": { ka: "ვადაგადაცილებული", en: "Overdue" },
+  "schedule.due_soon": { ka: "გადასამოწმებელია", en: "Due soon" },
+  "schedule.document_expiring": { ka: "დოკუმენტი იწურება", en: "Document expiring" },
+
+  // Audit export
+  "audit.export": { ka: "აუდიტისთვის ექსპორტი", en: "Export for audit" },
+  "audit.export_all": { ka: "ყველა ინსპექცია + დოკუმენტი", en: "All inspections + documents" },
+  "audit.export_description": { ka: "ჩამოტვირთე სრული კომპლაიანსის პაკეტი", en: "Download complete compliance package" },
+  "audit.generating": { ka: "იქმნება...", en: "Generating..." },
+
+  // Expert profile
+  "expert.profile": { ka: "ექსპერტის პროფილი", en: "Expert profile" },
+  "expert.active_projects": { ka: "აქტიური პროექტი", en: "Active projects" },
+  "expert.completed_inspections": { ka: "ჩატარებული ინსპექცია", en: "Completed inspections" },
+  "expert.average_score": { ka: "საშუალო ქულა", en: "Average score" },
+  "expert.specialties": { ka: "სპეციალიზაცია", en: "Specialties" },
+  "expert.share_profile": { ka: "პროფილის გაზიარება", en: "Share profile" },
+  "expert.contact": { ka: "დაკავშირება", en: "Contact" },
+
   // Timeline
   "timeline.title": { ka: "ისტორია", en: "Timeline" },
   "timeline.inspection_started": { ka: "ინსპექცია დაიწყო", en: "Inspection started" },

@@ -8,6 +8,7 @@ export { DEMO_COMPANY_ID, demoRegulations } from "./demo-data";
 
 // =============================================
 // Data Store — everything in localStorage
+// User data is NEVER overwritten. Seed updates are merged in by ID.
 // =============================================
 
 const STORAGE_KEY = "safety_app_data";
@@ -25,57 +26,99 @@ export interface AppData {
   users: User[];
 }
 
-// Migration: old "warning" status → "violation"; ensure documents array exists
+/**
+ * Merge an array of default items into a user array, by id.
+ * - Items already present in the user array are KEPT (user wins).
+ * - Items missing from the user array are APPENDED.
+ * Never deletes or overwrites.
+ */
+function mergeById<T extends { id: string }>(userItems: T[] | undefined, defaults: T[]): T[] {
+  const existing = Array.isArray(userItems) ? userItems : [];
+  const existingIds = new Set(existing.map((i) => i.id));
+  const missing = defaults.filter((d) => !existingIds.has(d.id));
+  if (missing.length === 0) return existing;
+  return [...existing, ...missing];
+}
+
+/**
+ * Additive merge of defaults into user data. Never overwrites anything
+ * the user has created or modified.
+ */
+function mergeWithDefaults(data: AppData, defaults: AppData): AppData {
+  return {
+    // Scalars — keep user values if present
+    lang: data.lang || defaults.lang,
+    currentRole: data.currentRole || defaults.currentRole,
+    currentUser: data.currentUser || defaults.currentUser,
+    // Collections — additive merge by id
+    projects: mergeById(data.projects, defaults.projects),
+    templates: mergeById(data.templates, defaults.templates),
+    inspections: mergeById(data.inspections, defaults.inspections),
+    regulations: mergeById(data.regulations, defaults.regulations),
+    notifications: mergeById(data.notifications, defaults.notifications),
+    documents: mergeById(data.documents, defaults.documents),
+    users: mergeById(data.users, defaults.users),
+  };
+}
+
+/**
+ * One-off data migrations (mutate values that are no longer valid in the
+ * current schema). Must only change invalid values — never touch anything
+ * the user has legitimately set.
+ */
 function migrateLegacyData(data: AppData): AppData {
-  let migrated = false;
+  let touched = false;
   const inspections = data.inspections.map((insp) => {
-    const items = insp.items.map((item: any) => {
+    let itemTouched = false;
+    const items = (insp.items || []).map((item: any) => {
+      // Old "warning" status no longer exists in the type — downgrade to "violation"
       if (item.status === "warning") {
-        migrated = true;
+        itemTouched = true;
+        touched = true;
         return { ...item, status: "violation" };
       }
       return item;
     });
-    return migrated ? { ...insp, items } : insp;
+    return itemTouched ? { ...insp, items } : insp;
   });
-  let result = migrated ? { ...data, inspections } : data;
-  // Ensure documents array exists (older localStorage won't have it)
-  if (!Array.isArray((result as any).documents)) {
-    const defaults = getDefaultData();
-    result = { ...result, documents: defaults.documents };
-  }
-  return result;
+  return touched ? { ...data, inspections } : data;
 }
 
 export function loadData(): AppData {
   if (typeof window === "undefined") return getDefaultData();
+  const defaults = getDefaultData();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      let data: AppData = JSON.parse(raw);
-      // Merge any new default regulations not yet in localStorage
-      const defaults = getDefaultData();
-      const existingIds = new Set(data.regulations.map((r) => r.id));
-      const missing = defaults.regulations.filter((r) => !existingIds.has(r.id));
-      if (missing.length > 0) {
-        data.regulations = [...data.regulations, ...missing];
-      }
-      // Migrate legacy "warning" status
-      data = migrateLegacyData(data);
-      saveData(data);
-      return data;
+      const parsed = JSON.parse(raw) as AppData;
+      // 1) Migrate legacy invalid values (warning → violation)
+      const migrated = migrateLegacyData(parsed);
+      // 2) Additive merge new seed items (never overwrites user data)
+      const merged = mergeWithDefaults(migrated, defaults);
+      saveData(merged);
+      return merged;
     }
-  } catch {}
-  const data = getDefaultData();
-  saveData(data);
-  return data;
+  } catch (e) {
+    console.warn("Failed to parse localStorage, falling back to defaults", e);
+  }
+  // First run — seed defaults
+  saveData(defaults);
+  return defaults;
 }
 
 export function saveData(data: AppData) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn("Failed to save to localStorage", e);
+  }
 }
 
+/**
+ * Explicit user-triggered reset. Wipes localStorage and reloads seed data.
+ * This is the ONLY code path that erases user content.
+ */
 export function resetData(): AppData {
   const data = getDefaultData();
   saveData(data);
